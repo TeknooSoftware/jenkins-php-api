@@ -1,7 +1,7 @@
 {
-    "name": "jenkins-khan/jenkins-api",
+    "name": "ooobii/jenkins-api",
     "type": "library",
-    "description": "Jenkins PHP API",
+    "description": "Jenkins Management for PHP",
     "keywords": [
         "jenkins",
         "api",
@@ -22,6 +22,10 @@
         {
             "name": "Matthew Wendel <matthewwendel77@gmail.com>",
             "homepage": "https://github.com/ooobii"
+        },
+        {
+            "name": "jenkins-khan",
+            "homepage": "https://github.com/jenkins-khan/jenkins-php-api"
         }
     ]
 }

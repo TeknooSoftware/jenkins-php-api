@@ -1,4 +1,4 @@
-# Jenkins PHP API
+# Jenkins Management for PHP
 
 This composer library is designed to facilitate interactions with Jenkins CI using its API or CLI via SSH.
 
@@ -11,7 +11,7 @@ The primary focus of this fork is to facilitate additional functionality through
 
 #### Package Installation
 
-To begin utilizing Jenkins PHP API, you can install it using [Composer](http://getcomposer.org):
+To begin utilizing Jenkins Management for PHP, you can install it using [Composer](http://getcomposer.org):
 
 ```bash
 # Once composer is installed, you can require it within your project.

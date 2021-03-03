@@ -22,7 +22,6 @@ pipeline {
                     extensions: [[$class: 'WipeWorkspace']],
                     userRemoteConfigs: [[url: 'git@github.com:ooobii/jenkins-php-api.git']]
                 ])
-            // sh "git clone --branch $BRANCH_NAME git@github.com:ooobii/jenkins-php-api.git ."
             }
         }
         stage('Install Composer') {

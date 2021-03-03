@@ -2,6 +2,8 @@
 
 This composer library is designed to facilitate interactions with Jenkins CI using its API or CLI via SSH.
 
+This library is distributed with the [MIT License](https://tldrlegal.com/license/mit-license) applied to all work within.
+
 ## About this Fork
 **Note:** This is a fork of the original repository created by [Jenkins Khan](https://github.com/jenkins-khan), located [here](https://github.com/jenkins-khan/jenkins-php-api). A huge thanks to them for starting this project. 
 

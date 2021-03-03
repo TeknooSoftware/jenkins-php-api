@@ -1,8 +1,8 @@
 <?php
 
-namespace JenkinsKhan\Jenkins;
+namespace ooobii\Jenkins;
 
-use JenkinsKhan\Jenkins;
+use ooobii\Jenkins;
 
 class View
 {

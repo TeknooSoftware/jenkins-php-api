@@ -1,6 +1,6 @@
 <?php
 
-namespace JenkinsKhan;
+namespace ooobii;
 
 class Jenkins
 {
@@ -270,7 +270,7 @@ class Jenkins
     /**
      * @param string $jobName
      *
-     * @return bool|\JenkinsKhan\Jenkins\Job
+     * @return bool|\ooobii\Jenkins\Job
      * @throws \RuntimeException
      */
     public function getJob($jobName)

@@ -1,8 +1,8 @@
 <?php
 
-namespace JenkinsKhan\Jenkins;
+namespace ooobii\Jenkins;
 
-use JenkinsKhan\Jenkins;
+use ooobii\Jenkins;
 
 class Build
 {
@@ -122,9 +122,9 @@ class Build
     public function getEstimatedDuration()
     {
         //since version 1.461 estimatedDuration is displayed in jenkins's api
-        //we can use it witch is more accurate than calcule ourselves
+        //we can use it witch is more accurate than calculate ourselves
         //but older versions need to continue to work, so in case of estimated
-        //duration is not found we fallback to calcule it.
+        //duration is not found we fallback to calculate it.
         if (property_exists($this->build, 'estimatedDuration')) {
             return $this->build->estimatedDuration / 1000;
         }

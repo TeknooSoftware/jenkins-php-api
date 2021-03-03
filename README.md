@@ -1,34 +1,61 @@
-Jenkins PHP API
-===============
+# Jenkins PHP API
 
+This composer library is designed to facilitate interactions with Jenkins CI using its API or CLI via SSH.
 
-Jenkins PHP API is a set of classes designed to interact with Jenkins CI using its API.
+## About this Fork
+**Note:** This is a fork of the original repository created by [Jenkins Khan](https://github.com/jenkins-khan), located [here](https://github.com/jenkins-khan/jenkins-php-api). A huge thanks to them for starting this project. 
 
-Installation
-------------
+The primary focus of this fork is to facilitate additional functionality through the Jenkins CLI via. SSH. Since many publicly-accessible pieces of functionality are changing from the original, this fork is also published as it's own [Composer](http://getcomposer.org) package under my identity (ooobii).
 
-The recommended way to install Jenkins PHP API is through [Composer](http://getcomposer.org).
+## Installation
+
+#### Package Installation
+
+To begin utilizing Jenkins PHP API, you can install it using [Composer](http://getcomposer.org):
 
 ```bash
+# Once composer is installed, you can require it within your project.
+# Using this 'require' variant will install the latest stable release build.
+composer require ooobii/jenkins-api
+
+# To use the latest development build, .
+composer require ooobii/jenkins-api:dev-master
+```
+
+#### Composer Installation
+
+If you do not have [Composer](http://getcomposer.org) installed, you can download the binary to your project's folder:
+```bash
+# Always exercise caution when executing installer scripts from remote sources!
 curl -sS https://getcomposer.org/installer | php
+
+# This isn't required, but it's easier to refer to it this way.
+mv composer.phar composer
 ```
 
-Then, run the Composer command to install the latest version:
+Alternatively, you can install it on your system globally, so the command `composer` will be accessible anywhere:
+``` bash
+# Always exercise caution when executing installer scripts from remote sources!
+wget "https://getcomposer.org/installer" -O composer-setup.php
 
-```bash
-composer.phar require jenkins-khan/jenkins-api
+# These 2 arguments will copy the binary to a folder in your $PATH, and remove the default extension.
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 ```
 
 
-Basic Usage
------------
+## Basic Usage
 
-
-Before anything, you need to instantiate the client :
-
+### Connecting to a Jenkins Instance
+Before anything, you need to instantiate the client:
 
 ```php
-    $jenkins = new \JenkinsKhan\Jenkins('http://host.org:8080');
+$jenkins = new \ooobii\Jenkins('http://host.org:8080');
+```
+**_OR:_**
+```php
+use \ooobii\Jenkins;
+...
+$jenkins = new Jenkins('http://host.org:8080');
 ```
 
 If your Jenkins needs authentication, you need to pass a URL like this : `'http://user:token@host.org:8080'`.

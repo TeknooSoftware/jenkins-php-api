@@ -1,5 +1,5 @@
 # Jenkins Management for PHP
-[![Build Status](https://jenkins.matthewwendel.info/buildStatus/icon?job=jenkins-php-api%2Fmaster)](https://jenkins.matthewwendel.info/job/jenkins-php-api/job/master/)
+[![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.matthewwendel.info%2Fjob%2Fjenkins-php-api%2Fjob%2Fmaster%2F&style=plastic)](https://jenkins.matthewwendel.info/job/jenkins-php-api/job/master/) [![Build Status](https://img.shields.io/jenkins/tests?compact_message&failed_label=failures&jobUrl=https%3A%2F%2Fjenkins.matthewwendel.info%2Fjob%2Fjenkins-php-api%2Fjob%2Fmaster%2F&label=phpunit&passed_label=successful&skipped_label=untested&style=plastic)](https://jenkins.matthewwendel.info/job/jenkins-php-api/job/master/)
 
 This composer library is designed to facilitate interactions with Jenkins CI using its API or CLI via SSH.
 

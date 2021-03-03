@@ -1,5 +1,7 @@
 # Jenkins Management for PHP
+[![Build Status](https://jenkins.matthewwendel.info/job/jenkins-php-api/job/master/2/badge/icon)](https://jenkins.matthewwendel.info/job/jenkins-php-api/job/master/2/)
 
+</br>
 This composer library is designed to facilitate interactions with Jenkins CI using its API or CLI via SSH.
 
 This library is distributed with the [MIT License](https://tldrlegal.com/license/mit-license) applied to all work within.

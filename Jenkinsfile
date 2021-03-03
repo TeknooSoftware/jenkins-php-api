@@ -57,8 +57,5 @@ pipeline {
         unstable {
             setBuildStatus('Unstable', 'UNSTABLE')
         }
-        always {
-            junit 'test/logs/*.xml'
-        }
     }
 }

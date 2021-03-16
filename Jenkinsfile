@@ -5,7 +5,7 @@ void setBuildStatus(String message, String state) {
     step([
         $class: 'GitHubCommitStatusSetter',
         reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/ooobii/jenkins-php-api'],
-        contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'jenkinsci/build'],
+        contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'build'],
         errorHandlers: [[$class: 'ChangingBuildStatusErrorHandler', result: 'UNSTABLE']],
         statusResultSource: [ $class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]] ]
     ])
@@ -22,7 +22,6 @@ pipeline {
                     extensions: [[$class: 'WipeWorkspace']],
                     userRemoteConfigs: [[url: 'git@github.com:ooobii/jenkins-php-api.git']]
                 ])
-            // sh "git clone --branch $BRANCH_NAME git@github.com:ooobii/jenkins-php-api.git ."
             }
         }
         stage('Install Composer') {
@@ -37,7 +36,7 @@ pipeline {
         }
         stage('Install Composer Pkgs') {
             steps {
-                sh './composer/composer install'
+                sh './composer/composer install --dev'
             }
         }
         stage('Remove Composer') {

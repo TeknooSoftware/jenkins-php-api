@@ -2,31 +2,33 @@
 
 namespace ooobii;
 
-class Jenkins
-{
+class Jenkins {
 
     /**
+     * The URL configured for use in each API request.
+     * 
      * @var string
      */
     private $baseUrl;
 
     /**
-     * @var null
+     * The object used to store the primary API endpoint result, storing information about the Jenkins instance.
+     *
+     * @var stdClass|null;
      */
-    private $jenkins = null;
+    private $jenkins = NULL;
 
     /**
-     * Whether or not to retrieve and send anti-CSRF crumb tokens
-     * with each request
+     * Signifies whether or not to retrieve and send anti-CSRF crumb tokens with each request to the Jenkins API.
      *
-     * Defaults to false for backwards compatibility
+     * Defaults to `FALSE` for backwards compatibility.
      *
      * @var boolean
      */
-    private $crumbsEnabled = false;
+    private $crumbsEnabled = FALSE;
 
     /**
-     * The anti-CSRF crumb to use for each request
+     * The anti-CSRF crumb to use for each request to the Jenkins API.
      *
      * Set when crumbs are enabled, by requesting a new crumb from Jenkins
      *
@@ -35,7 +37,7 @@ class Jenkins
     private $crumb;
 
     /**
-     * The header to use for sending anti-CSRF crumbs
+     * The header to use for sending anti-CSRF crumbs to the Jenkins API.
      *
      * Set when crumbs are enabled, by requesting a new crumb from Jenkins
      *
@@ -43,150 +45,217 @@ class Jenkins
      */
     private $crumbRequestField;
 
+
     /**
-     * @param string $baseUrl
+     * Create a new instance of the Jenkins management class.
+     * 
+     * @param string $baseUrl The URL of the Jenkins instance to connect to.
      */
-    public function __construct($baseUrl)
-    {
+    public function __construct($baseUrl) {
         $this->baseUrl = $baseUrl;
     }
 
     /**
-     * Enable the use of anti-CSRF crumbs on requests
+     * Enables the use of anti-CSRF crumbs on requests to the Jenkins API.
      *
-     * @return void
+     * @return bool
+     *   * `TRUE` if crumbs were enabled successfully.
+     *   * `FALSE` if an error occurred when attempting to enable crumbs.
      */
-    public function enableCrumbs()
-    {
-        $this->crumbsEnabled = true;
+    public function enableCrumbs() {
 
+        //make a request to Jenkins for a crumb.
         $crumbResult = $this->requestCrumb();
 
+        //make sure that the result returned successfully.
         if (!$crumbResult || !is_object($crumbResult)) {
-            $this->crumbsEnabled = false;
 
-            return;
+            //the crumb failed to be obtained, disable crumbs and return failure.
+            $this->crumbsEnabled = false;
+            return FALSE;
+
         }
 
+        //the crumb was obtained; store the results and mark crumbs as enabled.
+        $this->crumbsEnabled = true;
         $this->crumb             = $crumbResult->crumb;
         $this->crumbRequestField = $crumbResult->crumbRequestField;
+
+        //report success
+        return TRUE;
+
     }
 
     /**
-     * Disable the use of anti-CSRF crumbs on requests
+     * Disable the use of anti-CSRF crumbs on requests to the Jenkins API.
      *
-     * @return void
+     * @return bool 
+     *   * `TRUE` if crumbs were disabled successfully.
+     *   * `FALSE` if crumbs were already disabled.
      */
-    public function disableCrumbs()
-    {
+    public function disableCrumbs() {
+        
+        //check to see if crumbs are already disabled.
+        if(!$this->crumbsEnabled) return FALSE;
+
+        //if not, destroy the crumb data obtained, and set the flag to 'FALSE'.
         $this->crumbsEnabled = false;
+        $this->crumb             = NULL;
+        $this->crumbRequestField = NULL;
+
+        //return success.
+        return TRUE;
+
     }
 
     /**
-     * Get the status of anti-CSRF crumbs
+     * Signifies whether or not to retrieve and send anti-CSRF crumb tokens with each request to the Jenkins API.
      *
      * @return boolean Whether or not crumbs have been enabled
      */
-    public function areCrumbsEnabled()
-    {
+    public function areCrumbsEnabled() {
         return $this->crumbsEnabled;
     }
 
-    public function requestCrumb()
-    {
-        $url = sprintf('%s/crumbIssuer/api/json', $this->baseUrl);
+    /**
+     * Requests a new crumb from the Jenkins API to authenticate the the current session.
+     *
+     * @return stdClass The crumb object that's delivered back from the Jenkins API.
+     */
+    public function requestCrumb() {
 
+        //define the request URL for curl to execute.
+        $url = "{$this->baseUrl}/crumbIssuer/api/json'";
+
+        //initialize curl with the URL compiled to obtain the crumb.
         $curl = curl_init($url);
 
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
+        //ensure that the body is not returned to the console STDOUT.
+        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, TRUE);
 
-        $ret = curl_exec($curl);
+        //execute the GET request through curl.
+        $result = curl_exec($curl);
 
-        $this->validateCurl($curl, 'Error getting csrf crumb');
+        //ensure the crumb obtained was valid.
+        $this->validateCurl($curl, 'Error getting CSRF crumb.');
 
-        $crumbResult = json_decode($ret);
+        //convert the crumb result from JSON to a PHP object.
+        $crumbResult = json_decode($result);
 
-        if (!$crumbResult instanceof \stdClass) {
-            throw new \RuntimeException('Error during json_decode of csrf crumb');
-        }
+        //make sure the json_decode operation succeeded.
+        if (json_last_error() !== \JSON_ERROR_NONE) throw new \RuntimeException('An error occurred when converting the Jenkins crumb response into a PHP object.');
 
+        //return the serialized crumb object from Jenkins.
         return $crumbResult;
+
     }
 
-    public function getCrumbHeader()
-    {
+    /**
+     * Returns the raw HTTP header content to include in request to the Jenkins API for crumb authentication.
+     *
+     * @return string The HTTP header to add to curl requests when crumbs are enabled.
+     */
+    public function getCrumbHeader() {
         return "$this->crumbRequestField: $this->crumb";
     }
 
     /**
+     * Determines if the Jenkins instance specified is available to fulfill API or SSH requests.
+     * 
      * @return boolean
+     *   * `TRUE` if the Jenkins instance's API set at construction is available.
+     *   * `FALSE` if the Jenkins instance's API set at construction is *not* available.
      */
-    public function isAvailable()
-    {
+    public function isAvailable() {
+
+        //load the curl request from the base url.
         $curl = curl_init($this->baseUrl . '/api/json');
+
+        //disable the content of the curl request from being echoed to STDOUT.
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
+
+        //execute the compiled curl request.
         curl_exec($curl);
 
         if (curl_errno($curl)) {
-            return false;
+            
+            //an error occurred when making the request to the Jenkins API.
+            //return failure.
+            return FALSE;
+
         } else {
-            try {
+
+            //the curl request ran successfully, but that just means Jenkins is up.
+            //also make sure that a job queue is available to read from; if not, the Jenkins instance cannot execute jobs.
+            try {  
                 $this->getQueue();
-            } catch (RuntimeException $e) {
-                //en cours de lancement de jenkins, on devrait passer par là
-                return false;
+            } catch (\RuntimeException $e) {
+
+                //job queue failed to be obtained. return failure.
+                return FALSE;
+
             }
         }
 
-        return true;
+        //checks pass, return availability.
+        return TRUE;
     }
 
     /**
+     * Load root instance data received from the Jenkins API before attempting to access data from it.
+     * 
      * @return void
-     * @throws \RuntimeException
+     * @throws \RuntimeException If the request to the Jenkins API fails, a `\RuntimeException` is thrown.
      */
-    private function initialize()
-    {
-        if (null !== $this->jenkins) {
-            return;
-        }
+    private function initialize() {
 
+        //if the root Jenkins data for this URL has already been obtained, don't continue.
+        if($this->jenkins !== null) return; 
+
+        //load the curl request.
         $curl = curl_init($this->baseUrl . '/api/json');
 
+        //set the options for the curl request.
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
 
+        //execute the curl request to the compiled Jenkins API url.
+        $result = curl_exec($curl);
+
+        //ensure that the curl's execution was valid.
         $this->validateCurl($curl, sprintf('Error during getting list of jobs on %s', $this->baseUrl));
 
-        $this->jenkins = json_decode($ret);
-        if (!$this->jenkins instanceof \stdClass) {
-            throw new \RuntimeException('Error during json_decode');
-        }
+        //set the Jenkins object to the decoded JSON result from the curl request.
+        $this->jenkins = json_decode($result);
+
+        //make sure that an error didn't occur when decoding the JSON data.
+        if (json_last_error() !== \JSON_ERROR_NONE || !$this->jenkins) 
+            throw new \RuntimeException('An error occurred when attempting to initialize the local Jenkins object; unable to decode API result data into JSON.');
+
     }
 
     /**
+     * Returns an array of job names that are present in the currently focused folder.
+     * 
      * @throws \RuntimeException
-     * @return array
+     * @return array<string>
      */
-    public function getAllJobs()
-    {
+    public function getAllJobNames() {
         $this->initialize();
 
         $jobs = array();
         foreach ($this->jenkins->jobs as $job) {
-            $jobs[$job->name] = array(
-                'name' => $job->name
-            );
+            $jobs[] = $job->name;
         }
 
         return $jobs;
     }
 
     /**
-     * @return Jenkins\Job[]
+     * Returns an array of job objects that are present in the currently focused folder.
+     * 
+     * @return array<Jenkins\Job>
      */
-    public function getJobs()
-    {
+    public function getAllJobs() {
         $this->initialize();
 
         $jobs = array();

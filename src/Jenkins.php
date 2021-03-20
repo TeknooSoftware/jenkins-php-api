@@ -57,11 +57,15 @@ class Jenkins
      *   * If a port number is specified, the number provided will be included in the constructed API URL.
      * 
      */
-    public function __construct($host, $useHttps = TRUE, $user = NULL, $token = NULL, $port = NULL) {
+    public function __construct($host, $port = NULL, $useHttps = TRUE, $user = NULL, $token = NULL) {
 
         //make sure host parameter is populated.
         if(!$host || strlen($host) < 1)
             throw new \Exception("Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided.");
+
+        //make sure that, if provided, the username is not empty.
+        if($port !== NULL && (!is_numeric($port) || $port < 1 || $port > 65535))
+            throw new \Exception("Unable to create new Jenkins management class; Invalid port provided.");
 
         //make sure that, if provided, the username is not empty.
         if($user !== NULL && strlen($user) < 1)
@@ -70,10 +74,6 @@ class Jenkins
         //make sure that, if provided, the username is not empty.
         if($token !== NULL && strlen($token) < 1)
             throw new \Exception("Unable to create new Jenkins management class; Invalid token provided.");
-
-        //make sure that, if provided, the username is not empty.
-        if($port !== NULL && (!is_numeric($port) || $port < 1 || $port > 65535))
-            throw new \Exception("Unable to create new Jenkins management class; Invalid port provided.");
 
 
         //use HTTP or HTTPS based on provided argument.

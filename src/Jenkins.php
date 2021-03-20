@@ -11,7 +11,7 @@ class Jenkins
     private $baseUrl;
 
     /**
-     * @var null
+     * @var stdClass
      */
     private $jenkins = null;
 
@@ -132,7 +132,7 @@ class Jenkins
         } else {
             try {
                 $this->getQueue();
-            } catch (RuntimeException $e) {
+            } catch (\RuntimeException $e) {
                 //en cours de lancement de jenkins, on devrait passer par là
                 return false;
             }

@@ -44,11 +44,60 @@ class Jenkins
     private $crumbRequestField;
 
     /**
-     * @param string $baseUrl
+     * Create a new instance of the Jenkins management interface class.
+     * 
+     * Uses the provided parameters to formulate the URL used for API requests.
+     *
+     * @param string $host The DNS hostname or TCP/IP address of the Jenkins host to connect to.
+     * @param boolean $useHttps Set to `TRUE` if the Jenkins instance you're connecting to does not allow regular HTTP traffic.
+     * @param string|null $user *(Required if API needs authentication)* The username to impersonate when connecting to the Jenkins API.
+     * @param string|null $token *(Required if API needs authentication)* An API token that belongs to the user to impersonate for Jenkins API communications.
+     * @param int $port The TCP/IP port number to send the HTTP/HTTPS requests through.
+     *   * If the port number is not specified, the default port number for the selected HTTP/HTTPS transmission method will be used.
+     *   * If a port number is specified, the number provided will be included in the constructed API URL.
+     * 
      */
-    public function __construct($baseUrl)
-    {
+    public function __construct($host, $useHttps = TRUE, $user = NULL, $token = NULL, $port = NULL) {
+
+        //make sure host parameter is populated.
+        if(!$host || strlen($host) < 1)
+            throw new \Exception("Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided.");
+
+        //make sure that, if provided, the username is not empty.
+        if($user !== NULL && strlen($user) < 1)
+            throw new \Exception("Unable to create new Jenkins management class; Invalid username provided.");
+
+        //make sure that, if provided, the username is not empty.
+        if($token !== NULL && strlen($token) < 1)
+            throw new \Exception("Unable to create new Jenkins management class; Invalid token provided.");
+
+        //make sure that, if provided, the username is not empty.
+        if($port !== NULL && (!is_numeric($port) || $port < 1 || $port > 65535))
+            throw new \Exception("Unable to create new Jenkins management class; Invalid port provided.");
+
+
+        //use HTTP or HTTPS based on provided argument.
+        $baseUrl = "https://";
+        $useHttps or $baseUrl = "http://";
+    
+        //if a username is provided, append it to the URL.
+        if($user) $baseUrl .= $user;
+    
+        //if a token is provided, append it to the URL.
+        if($token) $baseUrl .= ':' . $token;
+    
+        //if either a token or username was provided, add the identity separator to the URL.
+        if($user || $token) $baseUrl .= '@';
+    
+        //append the hostname of the Jenkins instance to the URL.
+        $baseUrl .= $host;
+    
+        //if a port was set, append it to the output URL.
+        if($port) $baseUrl .= ':' . $port;
+
+        //now that URL is compiled, set the base URL.
         $this->baseUrl = $baseUrl;
+
     }
 
     /**

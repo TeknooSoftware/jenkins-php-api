@@ -63,7 +63,7 @@ class Jenkins
         if(!$host || strlen($host) < 1)
             throw new \Exception("Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided.");
 
-        //make sure that, if provided, the username is not empty.
+        //make sure that, if provided, the port number is a valid value.
         if($port !== NULL && (!is_numeric($port) || $port < 1 || $port > 65535))
             throw new \Exception("Unable to create new Jenkins management class; Invalid port provided.");
 
@@ -71,8 +71,8 @@ class Jenkins
         if($user !== NULL && strlen($user) < 1)
             throw new \Exception("Unable to create new Jenkins management class; Invalid username provided.");
 
-        //make sure that, if provided, the username is not empty.
-        if($token !== NULL && strlen($token) < 1)
+        //make sure that, if provided, the token is not empty.
+        if($token !== NULL && empty(trim($token)))
             throw new \Exception("Unable to create new Jenkins management class; Invalid token provided.");
 
 
@@ -84,7 +84,7 @@ class Jenkins
         if($user) $baseUrl .= $user;
     
         //if a token is provided, append it to the URL.
-        if($token) $baseUrl .= ':' . $token;
+        if($token) $baseUrl .= ':' . trim($token);
     
         //if either a token or username was provided, add the identity separator to the URL.
         if($user || $token) $baseUrl .= '@';

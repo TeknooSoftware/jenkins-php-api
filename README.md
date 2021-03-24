@@ -56,7 +56,7 @@ $jenkins = new \ooobii\Jenkins($host, $port = NULL, $useHttps = TRUE, $user = NU
 ```
 **_OR:_**
 ```php
-use \ooobii\Jenkins;a
+use \ooobii\Jenkins;
 ...
 $jenkins = new Jenkins($host, $port = NULL, $useHttps = TRUE, $user = NULL, $token = NULL);
 ```

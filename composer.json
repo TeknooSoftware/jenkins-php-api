@@ -12,7 +12,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "ooobii\\": "src/"
+            "ooobii\\": "src/",
+            "ooobii\\Jenkins\\": "src/JenkinsComponents/"
         }
     },
     "config": {

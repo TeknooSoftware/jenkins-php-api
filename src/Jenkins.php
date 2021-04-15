@@ -242,9 +242,9 @@ class Jenkins
     public function launchJob($jobName, $parameters = array())
     {
         if (0 === count($parameters)) {
-            $url = sprintf('%s/job/%s/build', $this->baseUrl, $jobName);
+            $url = sprintf('%s/job/%s/build', $this->baseUrl, \rawurlencode($jobName));
         } else {
-            $url = sprintf('%s/job/%s/buildWithParameters', $this->baseUrl, $jobName);
+            $url = sprintf('%s/job/%s/buildWithParameters', $this->baseUrl, \rawurlencode($jobName));
         }
 
         $curl = curl_init($url);
@@ -262,7 +262,14 @@ class Jenkins
 
         curl_exec($curl);
 
-        $this->validateCurl($curl, sprintf('Error trying to launch job "%s" (%s)', $jobName, $url));
+        $this->validateCurl($curl, sprintf('Error trying to launch job "%s" (%s)', 
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           
+                                           f, $url));
 
         return true;
     }
@@ -275,7 +282,7 @@ class Jenkins
      */
     public function getJob($jobName)
     {
-        $url  = sprintf('%s/job/%s/api/json', $this->baseUrl, $jobName);
+        $url  = sprintf('%s/job/%s/api/json', $this->baseUrl, \rawurlencode($jobName));
         $curl = curl_init($url);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
@@ -742,7 +749,7 @@ class Jenkins
      */
     public function getTestReport($jobName, $buildId)
     {
-        $url  = sprintf('%s/job/%s/%d/testReport/api/json', $this->baseUrl, $jobName, $buildId);
+        $url  = sprintf('%s/job/%s/%d/testReport/api/json', $this->baseUrl, \rawurlencode($jobName), $buildId);
         $curl = curl_init($url);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);

@@ -307,7 +307,7 @@ class Jenkins
      */
     public function deleteJob($jobName)
     {
-        $url  = sprintf('%s/job/%s/doDelete', $this->baseUrl, $jobName);
+        $url  = sprintf('%s/job/%s/doDelete', $this->baseUrl, \rawurlencode($jobName));
         $curl = curl_init($url);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);

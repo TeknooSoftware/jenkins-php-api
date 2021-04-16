@@ -250,7 +250,7 @@ class Jenkins
         $curl = curl_init($url);
 
         curl_setopt($curl, \CURLOPT_POST, 1);
-        curl_setopt($curl, \CURLOPT_POSTFIELDS, http_build_query($parameters));
+        curl_setopt($curl, \CURLOPT_POSTFIELDS, $parameters);
 
         $headers = array();
 

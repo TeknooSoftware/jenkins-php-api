@@ -420,7 +420,7 @@ class Jenkins
         if ($tree !== null) {
             $tree = sprintf('?tree=%s', $tree);
         }
-        $url  = sprintf('%s/job/%s/%d/api/json%s', $this->baseUrl, $job, $buildId, $tree);
+        $url  = sprintf('%s/job/%s/%d/api/json%s', $this->baseUrl, \rawurlencode($job), $buildId, $tree);
         $curl = curl_init($url);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
@@ -450,7 +450,7 @@ class Jenkins
     {
         return (null === $buildId) ?
             $this->getUrlJob($job)
-            : sprintf('%s/job/%s/%d', $this->baseUrl, $job, $buildId);
+            : sprintf('%s/job/%s/%d', $this->baseUrl, \rawurlencode($job), $buildId);
     }
 
     /**
@@ -496,7 +496,7 @@ class Jenkins
      */
     public function getUrlJob($job)
     {
-        return sprintf('%s/job/%s', $this->baseUrl, $job);
+        return sprintf('%s/job/%s', $this->baseUrl, \rawurlencode($job));
     }
 
     /**
@@ -544,7 +544,7 @@ class Jenkins
      */
     public function createJob($jobname, $xmlConfiguration)
     {
-        $url  = sprintf('%s/createItem?name=%s', $this->baseUrl, $jobname);
+        $url  = sprintf('%s/createItem?name=%s', $this->baseUrl, \rawurlencode($jobname));
         $curl = curl_init($url);
         curl_setopt($curl, \CURLOPT_POST, 1);
 
@@ -577,7 +577,7 @@ class Jenkins
      */
     public function setJobConfig($jobname, $configuration)
     {
-        $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, $jobname);
+        $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, \rawurlencode($jobname));
         $curl = curl_init($url);
         curl_setopt($curl, \CURLOPT_POST, 1);
         curl_setopt($curl, \CURLOPT_POSTFIELDS, $configuration);
@@ -601,7 +601,7 @@ class Jenkins
      */
     public function getJobConfig($jobname)
     {
-        $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, $jobname);
+        $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, \rawurlencode($jobname));
         $curl = curl_init($url);
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -725,7 +725,7 @@ class Jenkins
      */
     public function getConsoleTextBuild($jobname, $buildNumber)
     {
-        $url  = sprintf('%s/job/%s/%s/consoleText', $this->baseUrl, $jobname, $buildNumber);
+        $url  = sprintf('%s/job/%s/%s/consoleText', $this->baseUrl, \rawurlencode($jobname), $buildNumber);
         $curl = curl_init($url);
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
 

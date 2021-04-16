@@ -82,7 +82,7 @@ class Build
     public function getTimestamp()
     {
         //division par 1000 => pas de millisecondes
-        return $this->build->timestamp / 1000;
+        return (int) ($this->build->timestamp / 1000);
     }
 
 
@@ -92,7 +92,7 @@ class Build
     public function getDuration()
     {
         //division par 1000 => pas de millisecondes
-        return $this->build->duration / 1000;
+        return (int) ($this->build->duration / 1000);
     }
 
     /**

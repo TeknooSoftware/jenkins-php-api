@@ -52,23 +52,18 @@ php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 Before anything, you need to instantiate the client:
 
 ```php
-$jenkins = new \ooobii\Jenkins('http://host.org:8080');
+$jenkins = new \ooobii\Jenkins($host, $port = NULL, $useHttps = TRUE, $user = NULL, $token = NULL);
 ```
 **_OR:_**
 ```php
 use \ooobii\Jenkins;
 ...
-$jenkins = new Jenkins('http://host.org:8080');
+$jenkins = new Jenkins($host, $port = NULL, $useHttps = TRUE, $user = NULL, $token = NULL);
 ```
 
-If your Jenkins needs authentication, you need to pass a URL like this : `'http://user:token@host.org:8080'`.
+### Usage Examples
 
-
-Here are some examples of how to use it:
-
-
-Get the color of the job
-------------------------
+#### Get the color of the job
 
 ```php
     $job = $jenkins->getJob("dev2-pull");
@@ -77,8 +72,7 @@ Get the color of the job
 ```
 
 
-Launch a Job
-------------
+#### Launch a Job
 
 ```php
     $job = $jenkins->launchJob("clone-deploy");
@@ -87,8 +81,7 @@ Launch a Job
 ```
 
 
-List the jobs of a given view
------------------------------
+#### List the jobs of a given view
 
 ```php
     $view = $jenkins->getView('madb_deploy');
@@ -101,8 +94,7 @@ List the jobs of a given view
     //string(11) "fedora-pull"
 ```
 
-List builds and their status
-----------------------------
+#### List builds and their status
 
 ```php
     $job = $jenkins->getJob('dev2-pull');
@@ -117,8 +109,7 @@ List builds and their status
 ```
 
 
-Check if Jenkins is available
------------------------------
+#### Check if Jenkins is available
 
 ```php
     var_dump($jenkins->isAvailable());
@@ -126,9 +117,3 @@ Check if Jenkins is available
 ```
 
 For more information, see the [Jenkins API](https://wiki.jenkins-ci.org/display/JENKINS/Remote+access+API).
-
-
-Coding standards
-----------------
-
-This projects follows PSR-0, PSR-1, PSR-2, PSR-4

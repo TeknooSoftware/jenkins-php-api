@@ -10,6 +10,15 @@ void setBuildStatus(String message, String state) {
         statusResultSource: [ $class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]] ]
     ])
 }
+void setLintStatus(String message, String state) {
+    step([
+        $class: 'GitHubCommitStatusSetter',
+        reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/ooobii/jenkins-php-api'],
+        contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'lint'],
+        errorHandlers: [[$class: 'ChangingBuildStatusErrorHandler', result: 'UNSTABLE']],
+        statusResultSource: [ $class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]] ]
+    ])
+}
 
 
 pipeline {
@@ -22,6 +31,18 @@ pipeline {
                     extensions: [[$class: 'WipeWorkspace']],
                     userRemoteConfigs: [[url: 'git@github.com:ooobii/jenkins-php-api.git']]
                 ])
+            }
+        }
+        stage('Test Code Syntax') {
+            steps {
+                script {
+                    try {
+                        sh 'find ./src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l'
+                        setLintStatus('Syntax OK', 'SUCCESS')
+                    } catch (Exception e) {
+                        setLintStatus('Bad Syntax', 'FAILURE')
+                    }
+                }
             }
         }
         stage('Install Composer') {

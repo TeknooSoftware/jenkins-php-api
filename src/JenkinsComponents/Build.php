@@ -70,7 +70,7 @@ class Build
         }
 
         foreach ($this->build->actions[0]->parameters as $parameter) {
-            $parameters[$parameter->name] = $parameter->value;
+            $parameters[$parameter->name] = $parameter->value ?? null;
         }
 
         return $parameters;

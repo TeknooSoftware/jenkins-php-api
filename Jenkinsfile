@@ -4,7 +4,7 @@
 void setBuildStatus(String message, String state) {
     step([
         $class: 'GitHubCommitStatusSetter',
-        reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/ooobii/jenkins-php-api'],
+        reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/teknoosoftware/jenkins-php-api'],
         contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'build'],
         errorHandlers: [[$class: 'ChangingBuildStatusErrorHandler', result: 'UNSTABLE']],
         statusResultSource: [ $class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]] ]
@@ -13,7 +13,7 @@ void setBuildStatus(String message, String state) {
 void setLintStatus(String message, String state) {
     step([
         $class: 'GitHubCommitStatusSetter',
-        reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/ooobii/jenkins-php-api'],
+        reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/teknoosoftware/jenkins-php-api'],
         contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: 'lint'],
         errorHandlers: [[$class: 'ChangingBuildStatusErrorHandler', result: 'UNSTABLE']],
         statusResultSource: [ $class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]] ]
@@ -29,7 +29,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                     branches: [[name: "${GIT_BRANCH}"]],
                     extensions: [[$class: 'WipeWorkspace']],
-                    userRemoteConfigs: [[url: 'git@github.com:ooobii/jenkins-php-api.git']]
+                    userRemoteConfigs: [[url: 'git@github.com:teknoosoftware/jenkins-php-api.git']]
                 ])
             }
         }

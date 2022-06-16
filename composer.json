@@ -1,25 +1,21 @@
 {
-    "name": "ooobii/jenkins-api",
-    "type": "library",
+    "name": "teknoo/jenkins-api",
     "description": "Jenkins Management for PHP",
+    "license": ["MIT"],
+    "type": "library",
     "keywords": [
         "jenkins",
         "api",
         "cli",
+        "client",
         "management"
     ],
-    "homepage": "https://github.com/ooobii/jenkins-php-api",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "ooobii\\": "src/",
-            "ooobii\\Jenkins\\": "src/JenkinsComponents/"
-        }
-    },
-    "config": {
-        "bin-dir": "bin"
-    },
     "authors": [
+        {
+            "name": "Richard Déloge",
+            "email": "richarddeloge@gmail.com",
+            "role":"Software architect, Lead developer"
+        },
         {
             "name": "Matthew Wendel <matthewwendel77@gmail.com>",
             "homepage": "https://github.com/ooobii"
@@ -28,5 +24,41 @@
             "name": "jenkins-khan",
             "homepage": "https://github.com/jenkins-khan/jenkins-php-api"
         }
-    ]
+    ],
+    "support": {
+        "issues": "https://github.com/TeknooSoftware/jenkins-php-api/issues",
+        "source": "https://github.com/TeknooSoftware/jenkins-php-api"
+    },
+    "funding": [
+        {
+            "type": "patreon",
+            "url": "https://www.patreon.com/teknoo_software"
+        },
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/TeknooSoftware"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-dom": "*"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "phpunit/phpunit": "^9.5.20",
+        "squizlabs/php_codesniffer": "^3.6.2",
+        "sebastian/phpcpd": "^6.0.3",
+        "phploc/phploc": "^7.0.2",
+        "phpstan/phpstan": "^1.7.1",
+        "icanhazstring/composer-unused": "^0.8.2",
+        "nikic/php-parser": "^v4.13.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Teknoo\\Jenkins\\": "src/"
+        }
+    }
 }

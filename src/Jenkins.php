@@ -759,15 +759,7 @@ class Jenkins
         return curl_exec($curl);
     }
 
-    /**
-     * @param string $jobName
-     * @param        $buildId
-     *
-     * @return array
-     * @internal param string $buildNumber
-     *
-     */
-    public function getTestReport($jobName, $buildId)
+    public function getTestReport($jobName, $buildId): array
     {
         $url  = sprintf('%s/job/%s/%d/testReport/api/json', $this->baseUrl, \rawurlencode($jobName), $buildId);
         $curl = curl_init($url);
@@ -803,7 +795,7 @@ class Jenkins
      *
      * @return string
      */
-    public function execute($uri, array $curlOptions)
+    private function execute($uri, array $curlOptions): string
     {
         $url  = $this->baseUrl . '/' . $uri;
         $curl = curl_init($url);
@@ -818,7 +810,7 @@ class Jenkins
     /**
      * @return Jenkins\Computer[]
      */
-    public function getComputers()
+    public function getComputers(): array
     {
         $return = $this->execute(
             '/computer/api/json', array(
@@ -842,7 +834,7 @@ class Jenkins
      *
      * @return string
      */
-    public function getComputerConfiguration($computerName)
+    public function getComputerConfiguration($computerName): string
     {
         return $this->execute(sprintf('/computer/%s/config.xml', $computerName), array(\CURLOPT_RETURNTRANSFER => 1,));
     }

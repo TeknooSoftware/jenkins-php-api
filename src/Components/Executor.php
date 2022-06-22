@@ -76,11 +76,6 @@ class Executor
 
     public function stop(): void
     {
-        $this->getJenkins()->stopExecutor($this);
-    }
-
-    public function getJenkins(): Jenkins
-    {
-        return $this->jenkins;
+        $this->jenkins->stopExecutor($this);
     }
 }

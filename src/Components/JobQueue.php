@@ -76,11 +76,6 @@ class JobQueue
 
     public function cancel(): void
     {
-        $this->getJenkins()->cancelQueue($this);
-    }
-
-    public function getJenkins(): Jenkins
-    {
-        return $this->jenkins;
+        $this->jenkins->cancelQueue($this);
     }
 }

@@ -54,14 +54,9 @@ class Queue
         $jobs = array();
 
         foreach ($this->queue->items as $item) {
-            $jobs[] = new JobQueue($item, $this->getJenkins());
+            $jobs[] = new JobQueue($item, $this->jenkins);
         }
 
         return $jobs;
-    }
-
-    public function getJenkins(): Jenkins
-    {
-        return $this->jenkins;
     }
 }

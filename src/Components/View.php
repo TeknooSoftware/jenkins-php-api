@@ -55,12 +55,12 @@ class View
 
     public function getDescription(): string
     {
-        return (isset($this->view->description)) ? $this->view->description : null;
+        return $this->view?->description ?? '';
     }
 
     public function getURL(): string
     {
-        return (isset($this->view->url)) ? $this->view->url : null;
+        return $this->view?->url ?? '';
     }
 
     public function getJobs(): array
@@ -86,25 +86,17 @@ class View
         return $color;
     }
 
-    protected function getColorPriority(string $color): int
+    private function getColorPriority(string $color): int
     {
-        switch ($color) {
-            default:
-                return 999;
-            case 'red_anime':
-                return 11;
-            case 'red':
-                return 10;
-            case 'yellow_anime':
-                return 6;
-            case 'yellow':
-                return 5;
-            case 'blue_anime':
-                return 2;
-            case 'blue':
-                return 1;
-            case 'disabled':
-                return 0;
-        }
+        return match ($color) {
+            'red_anime' => 11,
+            'red' => 10,
+            'yellow_anime' => 6,
+            'yellow' => 5,
+            'blue_anime' => 2,
+            'blue' => 1,
+            'disabled' => 0,
+            default => 999,
+        };
     }
 }

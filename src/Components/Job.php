@@ -70,7 +70,7 @@ class Job
      */
     public function getJenkinsBuild(int $buildId): Build
     {
-        return $this->getJenkins()->getBuild($this->getName(), $buildId);
+        return $this->jenkins->getBuild($this->getName(), $buildId);
     }
 
     public function getName(): string
@@ -121,18 +121,13 @@ class Job
         return $document;
     }
 
-    public function getJenkins(): Jenkins
-    {
-        return $this->jenkins;
-    }
-
     public function getLastSuccessfulBuild(): ?Build
     {
         if (null === $this->job->lastSuccessfulBuild) {
             return null;
         }
 
-        return $this->getJenkins()->getBuild($this->getName(), $this->job->lastSuccessfulBuild->number);
+        return $this->jenkins->getBuild($this->getName(), $this->job->lastSuccessfulBuild->number);
     }
 
     public function getLastBuild(): ?Build
@@ -141,6 +136,6 @@ class Job
             return null;
         }
 
-        return $this->getJenkins()->getBuild($this->getName(), $this->job->lastBuild->number);
+        return $this->jenkins->getBuild($this->getName(), $this->job->lastBuild->number);
     }
 }

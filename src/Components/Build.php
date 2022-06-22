@@ -51,7 +51,6 @@ class Build
 {
     public function __construct(
         private stdClass $build,
-        private Jenkins $jenkins
     ) {
     }
 
@@ -161,11 +160,6 @@ class Build
     public function isRunning(): bool
     {
         return BuildStatus::RUNNING === $this->getResult();
-    }
-
-    public function getJenkins(): Jenkins
-    {
-        return $this->jenkins;
     }
 
     public function getBuiltOn()

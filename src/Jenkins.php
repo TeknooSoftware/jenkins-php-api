@@ -27,6 +27,9 @@ declare(strict_types=1);
 
 namespace Teknoo\Jenkins;
 
+use Exception;
+use function strlen;
+
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
  * @copyright   Copyright (c) SASU Teknoo Software (https://teknoo.software)
@@ -41,43 +44,31 @@ namespace Teknoo\Jenkins;
 class Jenkins
 {
 
-    /**
-     * @var string
-     */
-    private $baseUrl;
+    private string $baseUrl;
 
-    /**
-     * @var stdClass
-     */
-    private $jenkins = null;
+    private ?\stdClass $jenkins = null;
 
-    /**
+    /*
      * Whether or not to retrieve and send anti-CSRF crumb tokens
      * with each request
      *
      * Defaults to false for backwards compatibility
-     *
-     * @var boolean
      */
-    private $crumbsEnabled = false;
+    private bool $crumbsEnabled = false;
 
-    /**
+    /*
      * The anti-CSRF crumb to use for each request
      *
      * Set when crumbs are enabled, by requesting a new crumb from Jenkins
-     *
-     * @var string
      */
-    private $crumb;
+    private string $crumb;
 
-    /**
+    /*
      * The header to use for sending anti-CSRF crumbs
      *
      * Set when crumbs are enabled, by requesting a new crumb from Jenkins
-     *
-     * @var string
      */
-    private $crumbRequestField;
+    private string $crumbRequestField;
 
     /**
      * Create a new instance of the Jenkins management interface class.
@@ -93,24 +84,28 @@ class Jenkins
      *   * If a port number is specified, the number provided will be included in the constructed API URL.
      * 
      */
-    public function __construct($host, $port = NULL, $useHttps = TRUE, $user = NULL, $token = NULL) {
+    public function __construct(
+        string $host,
+        int $port,
+        bool $useHttps = true,
+        ?string $user = null,
+        ?string $token = null
+    ) {
+        if(empty($host)) {
+            throw new Exception("Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided.");
+        }
 
-        //make sure host parameter is populated.
-        if(!$host || strlen($host) < 1)
-            throw new \Exception("Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided.");
+        if($port < 1 || $port > 65535) {
+            throw new Exception("Unable to create new Jenkins management class; Invalid port provided.");
+        }
 
-        //make sure that, if provided, the port number is a valid value.
-        if($port !== NULL && (!is_numeric($port) || $port < 1 || $port > 65535))
-            throw new \Exception("Unable to create new Jenkins management class; Invalid port provided.");
+        if(empty($user)) {
+            throw new Exception("Unable to create new Jenkins management class; Invalid username provided.");
+        }
 
-        //make sure that, if provided, the username is not empty.
-        if($user !== NULL && strlen($user) < 1)
-            throw new \Exception("Unable to create new Jenkins management class; Invalid username provided.");
-
-        //make sure that, if provided, the token is not empty.
-        if($token !== NULL && empty(trim($token)))
-            throw new \Exception("Unable to create new Jenkins management class; Invalid token provided.");
-
+        if(empty($token)) {
+            throw new Exception("Unable to create new Jenkins management class; Invalid token provided.");
+        }
 
         //use HTTP or HTTPS based on provided argument.
         $baseUrl = "https://";
@@ -133,15 +128,12 @@ class Jenkins
 
         //now that URL is compiled, set the base URL.
         $this->baseUrl = $baseUrl;
-
     }
 
-    /**
+    /*
      * Enable the use of anti-CSRF crumbs on requests
-     *
-     * @return void
      */
-    public function enableCrumbs()
+    public function enableCrumbs(): void
     {
         $this->crumbsEnabled = true;
 
@@ -157,27 +149,23 @@ class Jenkins
         $this->crumbRequestField = $crumbResult->crumbRequestField;
     }
 
-    /**
+    /*
      * Disable the use of anti-CSRF crumbs on requests
-     *
-     * @return void
      */
-    public function disableCrumbs()
+    public function disableCrumbs(): void
     {
         $this->crumbsEnabled = false;
     }
 
-    /**
+    /*
      * Get the status of anti-CSRF crumbs
-     *
-     * @return boolean Whether or not crumbs have been enabled
      */
-    public function areCrumbsEnabled()
+    public function areCrumbsEnabled(): bool
     {
         return $this->crumbsEnabled;
     }
 
-    public function requestCrumb()
+    private function requestCrumb(): array
     {
         $url = sprintf('%s/crumbIssuer/api/json', $this->baseUrl);
 
@@ -198,7 +186,7 @@ class Jenkins
         return $crumbResult;
     }
 
-    public function getCrumbHeader()
+    private function getCrumbHeader(): string
     {
         return "$this->crumbRequestField: $this->crumb";
     }
@@ -206,7 +194,7 @@ class Jenkins
     /**
      * @return boolean
      */
-    public function isAvailable()
+    public function isAvailable(): bool
     {
         $curl = curl_init($this->baseUrl . '/api/json');
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
@@ -226,11 +214,7 @@ class Jenkins
         return true;
     }
 
-    /**
-     * @return void
-     * @throws \RuntimeException
-     */
-    private function initialize()
+    private function initialize(): void
     {
         if (null !== $this->jenkins) {
             return;
@@ -249,11 +233,7 @@ class Jenkins
         }
     }
 
-    /**
-     * @throws \RuntimeException
-     * @return array
-     */
-    public function getAllJobs()
+    public function getAllJobs(): array
     {
         $this->initialize();
 
@@ -270,7 +250,7 @@ class Jenkins
     /**
      * @return Jenkins\Job[]
      */
-    public function getJobs()
+    public function getJobs(): array
     {
         $this->initialize();
 
@@ -282,13 +262,7 @@ class Jenkins
         return $jobs;
     }
 
-    /**
-     * @param string $computer
-     *
-     * @return array
-     * @throws \RuntimeException
-     */
-    public function getExecutors($computer = '(master)')
+    public function getExecutors(string $computer = '(master)'): array
     {
         $this->initialize();
 
@@ -316,15 +290,7 @@ class Jenkins
         return $executors;
     }
 
-    /**
-     * @param       $jobName
-     * @param array $parameters
-     *
-     * @return bool
-     * @internal param array $extraParameters
-     *
-     */
-    public function launchJob($jobName, $parameters = array())
+    public function launchJob(string $jobName, array $parameters = array()): bool
     {
         if (0 === count($parameters)) {
             $url = sprintf('%s/job/%s/build', $this->baseUrl, \rawurlencode($jobName));
@@ -352,13 +318,7 @@ class Jenkins
         return true;
     }
 
-    /**
-     * @param string $jobName
-     *
-     * @return bool|\ooobii\Jenkins\Job
-     * @throws \RuntimeException
-     */
-    public function getJob($jobName)
+    public function getJob(string $jobName): Job
     {
         $url  = sprintf('%s/job/%s/api/json', $this->baseUrl, \rawurlencode($jobName));
         $curl = curl_init($url);
@@ -385,12 +345,7 @@ class Jenkins
         return new Jenkins\Job($infos, $this);
     }
 
-    /**
-     * @param string $jobName
-     *
-     * @return void
-     */
-    public function deleteJob($jobName)
+    public function deleteJob(string $jobName): void
     {
         $url  = sprintf('%s/job/%s/doDelete', $this->baseUrl, \rawurlencode($jobName));
         $curl = curl_init($url);
@@ -411,11 +366,7 @@ class Jenkins
         $this->validateCurl($curl, sprintf('Error deleting job %s on %s', $jobName, $this->baseUrl));
     }
 
-    /**
-     * @return Jenkins\Queue
-     * @throws \RuntimeException
-     */
-    public function getQueue()
+    public function getQueue(): Queue
     {
         $url  = sprintf('%s/queue/api/json', $this->baseUrl);
         $curl = curl_init($url);
@@ -436,7 +387,7 @@ class Jenkins
     /**
      * @return Jenkins\View[]
      */
-    public function getViews()
+    public function getViews(): array
     {
         $this->initialize();
 
@@ -448,10 +399,7 @@ class Jenkins
         return $views;
     }
 
-    /**
-     * @return Jenkins\View|null
-     */
-    public function getPrimaryView()
+    public function getPrimaryView(): ?View
     {
         $this->initialize();
         $primaryView = null;
@@ -464,13 +412,7 @@ class Jenkins
     }
 
 
-    /**
-     * @param string $viewName
-     *
-     * @return Jenkins\View
-     * @throws \RuntimeException
-     */
-    public function getView($viewName)
+    public function getView(string $viewName): View
     {
         $url  = sprintf('%s/view/%s/api/json', $this->baseUrl, rawurlencode($viewName));
         $curl = curl_init($url);

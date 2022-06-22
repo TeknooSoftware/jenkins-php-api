@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Teknoo\Jenkins\Components;
 
 
+use stdClass;
 use Teknoo\Jenkins\Jenkins;
 
 /**
@@ -44,8 +45,7 @@ use Teknoo\Jenkins\Jenkins;
 class TestReport
 {
     public function __construct(
-        private Jenkins $jenkins,
-        private \stdClass $testReport,
+        private stdClass $testReport,
         private string $jobName,
         private int $buildNumber
     ) {
@@ -91,7 +91,7 @@ class TestReport
         return $this->testReport->suites;
     }
 
-    public function getSuite($id): \stdClass
+    public function getSuite($id): stdClass
     {
         return $this->testReport->suites[$id];
     }
@@ -101,7 +101,7 @@ class TestReport
         $suite  = $this->getSuite($id);
         $status = 'PASSED';
         foreach ($suite->cases as $case) {
-            if ($case->status == 'FAILED') {
+            if ('FAILED' === $case->status) {
                 $status = 'FAILED';
                 break;
             }
@@ -110,4 +110,3 @@ class TestReport
         return $status;
     }
 }
-

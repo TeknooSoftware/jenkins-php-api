@@ -71,27 +71,20 @@ class Computer
 
     public function toggleOffline(): self
     {
-        $this->getJenkins()->toggleOfflineComputer($this->getName());
+        $this->jenkins->toggleOfflineComputer($this->getName());
 
         return $this;
     }
 
     public function delete(): self
     {
-        $this->getJenkins()
-             ->deleteComputer($this->getName());
+        $this->jenkins->deleteComputer($this->getName());
 
         return $this;
     }
 
-    public function getJenkins(): Jenkins
-    {
-        return $this->jenkins;
-    }
-
-
     public function getConfiguration(): string
     {
-        return $this->getJenkins()->getComputerConfiguration($this->getName());
+        return $this->jenkins->getComputerConfiguration($this->getName());
     }
 }

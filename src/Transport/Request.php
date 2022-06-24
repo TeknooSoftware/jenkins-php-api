@@ -23,7 +23,10 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Jenkins\Enums;
+namespace Teknoo\Jenkins\Transport;
+
+use Teknoo\Immutable\ImmutableInterface;
+use Teknoo\Immutable\ImmutableTrait;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -34,12 +37,42 @@ namespace Teknoo\Jenkins\Enums;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-enum BuildStatus: string
+class Request implements ImmutableInterface
 {
-    case FAILURE = 'FAILURE';
-    case SUCCESS = 'SUCCESS';
-    case RUNNING = 'RUNNING';
-    case WAITING = 'WAITING';
-    case UNSTABLE = 'UNSTABLE';
-    case ABORTED = 'ABORTED';
+    use ImmutableTrait;
+
+    public final function __construct(
+        private readonly string $path,
+        private readonly string $username,
+        private readonly string $token,
+        private readonly array $headers = [],
+        private readonly array $fields = [],
+    ) {
+        $this->uniqueConstructorCheck();
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function getFields(): array
+    {
+        return $this->fields;
+    }
 }

@@ -23,7 +23,12 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Jenkins\Enums;
+namespace Teknoo\Jenkins\Transport;
+
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriFactoryInterface;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -34,12 +39,18 @@ namespace Teknoo\Jenkins\Enums;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-enum BuildStatus: string
+interface TransportInterface extends RequestFactoryInterface, UriFactoryInterface
 {
-    case FAILURE = 'FAILURE';
-    case SUCCESS = 'SUCCESS';
-    case RUNNING = 'RUNNING';
-    case WAITING = 'WAITING';
-    case UNSTABLE = 'UNSTABLE';
-    case ABORTED = 'ABORTED';
+    /**
+     * To initialize a PSR7 Stream, compatible with the content type multipart/form-data, needed to execute the request,
+     * Jenkins API accepts only requests with a content type defined to "multipart/form-data".
+     *
+     * @param array<mixed, mixed> $elements
+     */
+    public function createStream(array &$elements, ?RequestInterface $request = null): StreamInterface;
+
+    /*
+     * To execute the PSR7 request, from the Jenkins client.
+     */
+    public function asyncExecute(RequestInterface $request): PromiseInterface;
 }

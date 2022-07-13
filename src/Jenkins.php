@@ -28,12 +28,16 @@ declare(strict_types=1);
 namespace Teknoo\Jenkins;
 
 use InvalidArgumentException;
+use JsonException;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use stdClass;
+use Teknoo\Jenkins\Components\Build;
 use Teknoo\Jenkins\Components\Computer;
 use Teknoo\Jenkins\Components\Executor;
 use Teknoo\Jenkins\Components\Job;
+use Teknoo\Jenkins\Components\Queue;
+use Teknoo\Jenkins\Components\View;
 use Teknoo\Jenkins\Transport\TransportInterface;
 use Teknoo\Jenkins\Transport\PromiseInterface;
 use Teknoo\Jenkins\Transport\Request;
@@ -186,9 +190,9 @@ class Jenkins
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
-    private static function jsonDecode(string $response): \stdClass
+    private static function jsonDecode(string $response): stdClass
     {
         return json_decode(
             json: $response,
@@ -431,31 +435,39 @@ class Jenkins
 
     public function getQueue(): Queue
     {
-        $url  = sprintf('%s/queue/api/json', $this->baseUrl);
-        $curl = curl_init($url);
-
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
-
-        $this->validateCurl($curl, sprintf('Error during getting information for queue on %s', $this->baseUrl));
-
-        $infos = json_decode($ret);
-        if (!$infos instanceof stdClass) {
-            throw new RuntimeException('Error during json_decode');
-        }
-
-        return new Jenkins\Queue($infos, $this);
+        return $this->executeGetQuery(
+            new Request(
+                path: '/queue/api/json',
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            static function (string $response): string {
+                //todo manage 404
+                return $response;
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                message: 'Error during getting information for queue',
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->then(
+            self::jsonDecode(...),
+        )->then(
+            fn (stdClass $infos) => new Queue($infos, $this),
+        )->wait();
     }
 
     /**
-     * @return Jenkins\View[]
+     * @return View[]
      */
     public function getViews(): array
     {
         $this->initialize();
 
         $views = array();
-        foreach ($this->jenkins->views as $view) {
+        foreach ($this->jenkins?->views ?? [] as $view) {
             $views[] = $this->getView($view->name);
         }
 
@@ -465,269 +477,198 @@ class Jenkins
     public function getPrimaryView(): ?View
     {
         $this->initialize();
-        $primaryView = null;
 
-        if (property_exists($this->jenkins, 'primaryView')) {
-            $primaryView = $this->getView($this->jenkins->primaryView->name);
+        $name = $this->jenkins?->primaryView?->name;
+        if (!empty($name)) {
+            return $this->getView($name);
         }
 
-        return $primaryView;
+        return null;
     }
 
 
     public function getView(string $viewName): View
     {
-        $url  = sprintf('%s/view/%s/api/json', $this->baseUrl, rawurlencode($viewName));
-        $curl = curl_init($url);
+        $viewName = rawurlencode($viewName);
 
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
-
-        $this->validateCurl(
-            $curl,
-            sprintf('Error during getting information for view %s on %s', $viewName, $this->baseUrl)
-        );
-
-        $infos = json_decode($ret);
-        if (!$infos instanceof stdClass) {
-            throw new RuntimeException('Error during json_decode');
-        }
-
-        return new Jenkins\View($infos, $this);
+        return $this->executeGetQuery(
+            new Request(
+                path: $path = "/view/$viewName/api/json",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            static function (string $response): string {
+                //todo manage 404
+                return $response;
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during getting information for view $viewName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->then(
+            self::jsonDecode(...),
+        )->then(
+            fn (stdClass $infos) => new View($infos, $this),
+        )->wait();
     }
 
-
-    /**
-     * @param        $job
-     * @param        $buildId
-     * @param string $tree
-     *
-     * @return Jenkins\Build
-     * @throws RuntimeException
-     */
-    public function getBuild($job, $buildId, $tree = 'actions[parameters,parameters[name,value]],result,duration,timestamp,number,url,estimatedDuration,builtOn')
-    {
+    public function getBuild(
+        string $jobName,
+        int $buildId,
+        string $tree = 'actions[parameters,parameters[name,value]],result,duration,timestamp,number,url,estimatedDuration,builtOn'
+    ): Build {
+        //todo securiser
         if ($tree !== null) {
             $tree = sprintf('?tree=%s', $tree);
         }
-        $url  = sprintf('%s/job/%s/%d/api/json%s', $this->baseUrl, rawurlencode($job), $buildId, $tree);
-        $curl = curl_init($url);
 
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
+        $jobName = rawurlencode($jobName);
 
-        $this->validateCurl(
-            $curl,
-            sprintf('Error during getting information for build %s#%d on %s', $job, $buildId, $this->baseUrl)
-        );
-
-        $infos = json_decode($ret);
-
-        if (!$infos instanceof stdClass) {
-            return null;
-        }
-
-        return new Jenkins\Build($infos, $this);
+        return $this->executeGetQuery(
+            new Request(
+                path: $path = "/job/$jobName/$buildId/api/json$tree",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            static function (string $response): string {
+                //todo manage 404
+                return $response;
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during getting information for build $jobName#$buildId",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->then(
+            self::jsonDecode(...),
+        )->then(
+            fn (stdClass $infos) => new Build($infos, $this),
+        )->wait();
     }
 
-    /**
-     * @param string $job
-     * @param int    $buildId
-     *
-     * @return null|string
-     */
-    public function getUrlBuild($job, $buildId)
+    public function getComputer(string $computerName): Computer
     {
-        return (null === $buildId) ?
-            $this->getUrlJob($job)
-            : sprintf('%s/job/%s/%d', $this->baseUrl, rawurlencode($job), $buildId);
+        $computerName = rawurlencode($computerName);
+
+        return $this->executeGetQuery(
+            new Request(
+                path: $path = "/computer/$computerName/api/json",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            static function (string $response): string {
+                //todo manage 404
+                return $response;
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during getting information for computer $computerName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->then(
+            self::jsonDecode(...),
+        )->then(
+            fn (stdClass $infos) => new Computer($infos, $this),
+        )->wait();
     }
 
-    /**
-     * @param string $computerName
-     *
-     * @return Jenkins\Computer
-     * @throws RuntimeException
-     */
-    public function getComputer($computerName)
-    {
-        $url  = sprintf('%s/computer/%s/api/json', $this->baseUrl, $computerName);
-        $curl = curl_init($url);
+    public function createJob(
+        string $jobName,
+        string $xmlConfiguration
+    ): self {
+        $jobName = rawurlencode($jobName);
 
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
+        $this->executePostQuery(
+            new Request(
+                path: "/createItem?name=$jobName",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader() + ['Content-Type' => 'text/xml'],
+                fields: $xmlConfiguration, //todo body string
+            ),
+        )->then(
+            self::jsonDecode(...),
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error creating job $jobName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
 
-        $this->validateCurl(
-            $curl,
-            sprintf('Error during getting information for computer %s on %s', $computerName, $this->baseUrl)
-        );
-
-        $infos = json_decode($ret);
-
-        if (!$infos instanceof stdClass) {
-            return null;
-        }
-
-        return new Jenkins\Computer($infos, $this);
+        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl()
+    public function setJobConfig(string $jobName, string $xmlConfiguration): self
     {
-        return $this->baseUrl;
+        $jobName = rawurlencode($jobName);
+
+        $this->executePostQuery(
+            new Request(
+                path: "/job/$jobName/config.xml",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader() + ['Content-Type' => 'text/xml'],
+                fields: $xmlConfiguration, //todo body string
+            ),
+        )->then(
+            self::jsonDecode(...),
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error updating job $jobName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
+
+        return $this;
     }
 
-    /**
-     * @param string $job
-     *
-     * @return string
-     */
-    public function getUrlJob($job)
+    public function getJobConfig(string $jobName): string
     {
-        return sprintf('%s/job/%s', $this->baseUrl, rawurlencode($job));
+        $jobName = rawurlencode($jobName);
+
+        return $this->executeGetQuery(
+            new Request(
+                path: "/job/$jobName/config.xml",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader()
+            ),
+        )->otherwise(
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error creating job $jobName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
     }
 
-    /**
-     * getUrlView
-     *
-     * @param string $view
-     *
-     * @return string
-     */
-    public function getUrlView($view)
+    public function stopExecutor(Executor $executor): self
     {
-        return sprintf('%s/view/%s', $this->baseUrl, $view);
-    }
+        $computerName = rawurlencode($executor->getComputer()->getName());
+        $this->executePostQuery(
+            new Request(
+                path: "/computer/$computerName/executors/{$executor->getNumber()}/stop",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            self::jsonDecode(...),
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during stopping executor $computerName#{$executor->getNumber()}",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
 
-    /**
-     * @param string $jobname
-     *
-     * @return string
-     *
-     * @deprecated use getJobConfig instead
-     *
-     * @throws RuntimeException
-     */
-    public function retrieveXmlConfigAsString($jobname)
-    {
-        return $this->getJobConfig($jobname);
-    }
-
-    /**
-     * @param string       $jobname
-     * @param \DomDocument $document
-     *
-     * @deprecated use setJobConfig instead
-     */
-    public function setConfigFromDomDocument($jobname, \DomDocument $document)
-    {
-        $this->setJobConfig($jobname, $document->saveXML());
-    }
-
-    /**
-     * @param string $jobname
-     * @param string $xmlConfiguration
-     *
-     * @throws InvalidArgumentException
-     */
-    public function createJob($jobname, $xmlConfiguration)
-    {
-        $url  = sprintf('%s/createItem?name=%s', $this->baseUrl, rawurlencode($jobname));
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_POST, 1);
-
-        curl_setopt($curl, \CURLOPT_POSTFIELDS, $xmlConfiguration);
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-
-        $headers = array('Content-Type: text/xml');
-
-        if ($this->areCrumbsEnabled()) {
-            $headers[] = $this->getCrumbHeader();
-        }
-
-        curl_setopt($curl, \CURLOPT_HTTPHEADER, $headers);
-
-        $response = curl_exec($curl);
-
-        if (curl_getinfo($curl, CURLINFO_HTTP_CODE) != 200) {
-            throw new InvalidArgumentException(sprintf('Job %s already exists', $jobname));
-        }
-        if (curl_errno($curl)) {
-            throw new RuntimeException(sprintf('Error creating job %s', $jobname));
-        }
-    }
-
-    /**
-     * @param string $jobname
-     * @param        $configuration
-     *
-     * @internal param string $document
-     */
-    public function setJobConfig($jobname, $configuration)
-    {
-        $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, rawurlencode($jobname));
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_POST, 1);
-        curl_setopt($curl, \CURLOPT_POSTFIELDS, $configuration);
-
-        $headers = array('Content-Type: text/xml');
-
-        if ($this->areCrumbsEnabled()) {
-            $headers[] = $this->getCrumbHeader();
-        }
-
-        curl_setopt($curl, \CURLOPT_HTTPHEADER, $headers);
-        curl_exec($curl);
-
-        $this->validateCurl($curl, sprintf('Error during setting configuration for job %s', $jobname));
-    }
-
-    /**
-     * @param string $jobname
-     *
-     * @return string
-     */
-    public function getJobConfig($jobname)
-    {
-        $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, rawurlencode($jobname));
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
-
-        $this->validateCurl($curl, sprintf('Error during getting configuration for job %s', $jobname));
-
-        return $ret;
-    }
-
-    /**
-     * @param Jenkins\Executor $executor
-     *
-     * @throws RuntimeException
-     */
-    public function stopExecutor(Jenkins\Executor $executor)
-    {
-        $url = sprintf(
-            '%s/computer/%s/executors/%s/stop', $this->baseUrl, $executor->getComputer(), $executor->getNumber()
-        );
-
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_POST, 1);
-
-        $headers = array();
-
-        if ($this->areCrumbsEnabled()) {
-            $headers[] = $this->getCrumbHeader();
-        }
-
-        curl_setopt($curl, \CURLOPT_HTTPHEADER, $headers);
-        curl_exec($curl);
-
-        $this->validateCurl(
-            $curl,
-            sprintf('Error during stopping executor #%s', $executor->getNumber())
-        );
+        return $this;
     }
 
     /**

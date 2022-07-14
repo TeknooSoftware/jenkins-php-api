@@ -36,7 +36,9 @@ use Teknoo\Jenkins\Components\Build;
 use Teknoo\Jenkins\Components\Computer;
 use Teknoo\Jenkins\Components\Executor;
 use Teknoo\Jenkins\Components\Job;
+use Teknoo\Jenkins\Components\JobQueue;
 use Teknoo\Jenkins\Components\Queue;
+use Teknoo\Jenkins\Components\TestReport;
 use Teknoo\Jenkins\Components\View;
 use Teknoo\Jenkins\Transport\TransportInterface;
 use Teknoo\Jenkins\Transport\PromiseInterface;
@@ -671,166 +673,147 @@ class Jenkins
         return $this;
     }
 
-    /**
-     * @param Jenkins\JobQueue $queue
-     *
-     * @throws RuntimeException
-     * @return void
-     */
-    public function cancelQueue(Jenkins\JobQueue $queue)
+    public function cancelQueue(JobQueue $queue): self
     {
-        $url = sprintf('%s/queue/item/%s/cancelQueue', $this->baseUrl, $queue->getId());
+        $this->executePostQuery(
+            new Request(
+                path: "/queue/item/{$queue->getId()}/cancelQueue",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            self::jsonDecode(...),
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during stopping job queue {$queue->getId()}",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
 
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_POST, 1);
+        return $this;
+    }
 
-        $headers = array();
+    public function toggleOfflineComputer(string $computerName): self
+    {
+        $computerName = rawurlencode($computerName);
+        $this->executePostQuery(
+            new Request(
+                path: "/computer/$computerName/toggleOffline",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            self::jsonDecode(...),
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error marking $computerName offline",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
 
-        if ($this->areCrumbsEnabled()) {
-            $headers[] = $this->getCrumbHeader();
-        }
+        return $this;
+    }
 
-        curl_setopt($curl, \CURLOPT_HTTPHEADER, $headers);
-        curl_exec($curl);
+    public function deleteComputer(string $computerName): self
+    {
+        $computerName = rawurlencode($computerName);
+        $this->executePostQuery(
+            new Request(
+                path: "/computer/$computerName/doDelete",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            self::jsonDecode(...),
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error deleting $computerName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
 
-        $this->validateCurl(
-            $curl,
-            sprintf('Error during stopping job queue #%s', $queue->getId())
-        );
+        return $this;
+    }
 
+    public function getConsoleTextBuild(string $jobName, int $buildNumber): string
+    {
+        $jobName = rawurlencode($jobName);
+
+        return $this->executeGetQuery(
+            new Request(
+                path: "/job/$jobName/$buildNumber/consoleText",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader()
+            ),
+        )->otherwise(
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error getting console output $jobName#$buildNumber",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
+    }
+
+    public function getTestReport(string $jobName, int $buildId): TestReport
+    {
+        return $this->executeGetQuery(
+            new Request(
+                path: $path = "/job/$jobName/$buildId/testReport/api/json",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            static function (string $response): string {
+                //todo manage 404
+                return $response;
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during getting test report about $jobName#$buildId",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->then(
+            self::jsonDecode(...),
+        )->then(
+            fn (stdClass $infos) => new TestReport($infos, $jobName, $buildId),
+        )->wait();
     }
 
     /**
-     * @param string $computerName
-     *
-     * @throws RuntimeException
-     * @return void
-     */
-    public function toggleOfflineComputer($computerName)
-    {
-        $url  = sprintf('%s/computer/%s/toggleOffline', $this->baseUrl, $computerName);
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_POST, 1);
-
-        $headers = array();
-
-        if ($this->areCrumbsEnabled()) {
-            $headers[] = $this->getCrumbHeader();
-        }
-
-        curl_setopt($curl, \CURLOPT_HTTPHEADER, $headers);
-        curl_exec($curl);
-
-        $this->validateCurl($curl, sprintf('Error marking %s offline', $computerName));
-    }
-
-    /**
-     * @param string $computerName
-     *
-     * @throws RuntimeException
-     * @return void
-     */
-    public function deleteComputer($computerName)
-    {
-        $url  = sprintf('%s/computer/%s/doDelete', $this->baseUrl, $computerName);
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_POST, 1);
-
-        $headers = array();
-
-        if ($this->areCrumbsEnabled()) {
-            $headers[] = $this->getCrumbHeader();
-        }
-
-        curl_setopt($curl, \CURLOPT_HTTPHEADER, $headers);
-        curl_exec($curl);
-
-        $this->validateCurl($curl, sprintf('Error deleting %s', $computerName));
-    }
-
-    /**
-     * @param string $jobname
-     * @param string $buildNumber
-     *
-     * @return string
-     */
-    public function getConsoleTextBuild($jobname, $buildNumber)
-    {
-        $url  = sprintf('%s/job/%s/%s/consoleText', $this->baseUrl, rawurlencode($jobname), $buildNumber);
-        $curl = curl_init($url);
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-
-        return curl_exec($curl);
-    }
-
-    public function getTestReport($jobName, $buildId): array
-    {
-        $url  = sprintf('%s/job/%s/%d/testReport/api/json', $this->baseUrl, rawurlencode($jobName), $buildId);
-        $curl = curl_init($url);
-
-        curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
-        $ret = curl_exec($curl);
-
-        $errorMessage = sprintf(
-            'Error during getting information for build %s#%d on %s', $jobName, $buildId, $this->baseUrl
-        );
-
-        $this->validateCurl(
-            $curl,
-            $errorMessage
-        );
-
-        $infos = json_decode($ret);
-
-        if (!$infos instanceof stdClass) {
-            throw new RuntimeException($errorMessage);
-        }
-
-        return new Jenkins\TestReport($this, $infos, $jobName, $buildId);
-    }
-
-    /**
-     * Returns the content of a page according to the jenkins base url.
-     * Useful if you use jenkins plugins that provides specific APIs.
-     * (e.g. "/cloud/ec2-us-east-1/provision")
-     *
-     * @param string $uri
-     * @param array  $curlOptions
-     *
-     * @return string
-     */
-    private function execute($uri, array $curlOptions): string
-    {
-        $url  = $this->baseUrl . '/' . $uri;
-        $curl = curl_init($url);
-        curl_setopt_array($curl, $curlOptions);
-        $ret = curl_exec($curl);
-
-        $this->validateCurl($curl, sprintf('Error calling "%s"', $url));
-
-        return $ret;
-    }
-
-    /**
-     * @return Jenkins\Computer[]
+     * @return Computer[]
      */
     public function getComputers(): array
     {
-        $return = $this->execute(
-            '/computer/api/json', array(
-                \CURLOPT_RETURNTRANSFER => 1,
+        return $this->executeGetQuery(
+            new Request(
+                path: $path = '/computer/api/json',
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader(),
+            ),
+        )->then(
+            static function (string $response): string {
+                //todo manage 404
+                return $response;
+            },
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error during getting test report about $jobName#$buildId",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->then(
+            self::jsonDecode(...),
+        )->then(
+            fn (stdClass $infos) => array_map(
+                fn ($computer) => $this->getComputer($computer->displayName),
+                $infos?->computer ?? []
             )
-        );
-        $infos  = json_decode($return);
-        if (!$infos instanceof stdClass) {
-            throw new RuntimeException('Error during json_decode');
-        }
-        $computers = array();
-        foreach ($infos->computer as $computer) {
-            $computers[] = $this->getComputer($computer->displayName);
-        }
-
-        return $computers;
+        )->wait();
     }
 
     /**
@@ -838,26 +821,23 @@ class Jenkins
      *
      * @return string
      */
-    public function getComputerConfiguration($computerName): string
+    public function getComputerConfiguration(string $computerName): string
     {
-        return $this->execute(sprintf('/computer/%s/config.xml', $computerName), array(\CURLOPT_RETURNTRANSFER => 1,));
-    }
+        $computerName = rawurlencode($computerName);
 
-    /**
-     * Validate curl_error() and http_code in a cURL request
-     *
-     * @param $curl
-     * @param $errorMessage
-     */
-    private function validateCurl($curl, $errorMessage) {
-
-        if (curl_errno($curl)) {
-            throw new RuntimeException($errorMessage);
-        }
-        $info = curl_getinfo($curl);
-
-        if ($info['http_code'] === 403) {
-            throw new RuntimeException(sprintf('Access Denied [HTTP status code 403] to %s"', $info['url']));
-        }
+        return $this->executeGetQuery(
+            new Request(
+                path: "/computer/$computerName/config.xml",
+                username: $this->username,
+                token: $this->token,
+                headers: $this->getCrumbHeader()
+            ),
+        )->otherwise(
+            fn (Throwable $error) => throw new RuntimeException(
+                message: "Error getting computer configuration $computerName",
+                code: $error->getCode(),
+                previous: $error,
+            ),
+        )->wait();
     }
 }

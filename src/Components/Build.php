@@ -49,11 +49,21 @@ use function time;
  */
 class Build
 {
+    /**
+     * @var callable
+     */
+    private $getExecutors;
+
     public function __construct(
         private stdClass $build,
+        callable $getExecutors,
     ) {
+        $this->getExecutors = $getExecutors;
     }
 
+    /**
+     * @return array<string, string|int|bool>
+     */
     public function getInputParameters(): array
     {
         $parameters = [];
@@ -117,15 +127,15 @@ class Build
      */
     public function getRemainingExecutionTime(): ?int
     {
-        $remaining = null;
-        if (null !== ($estimatedDuration = $this->getEstimatedDuration())) {
-            //be carefull because time from JK server could be different
-            //of time from Jenkins server
-            //but i didn't find a timestamp given by Jenkins api
-
-            $remaining = $estimatedDuration - (time() - $this->getTimestamp());
+        if (null === ($estimatedDuration = $this->getEstimatedDuration())) {
+            return null;
         }
 
+        //be carefull because time from JK server could be different
+        //of time from Jenkins server
+        //but i didn't find a timestamp given by Jenkins api
+
+        $remaining = (int) $estimatedDuration - (time() - $this->getTimestamp());
         return max(0, $remaining);
     }
 
@@ -146,7 +156,7 @@ class Build
         }
 
         $runExecutor = null;
-        foreach ($this->getJenkins()->getExecutors() as $executor) {
+        foreach (($this->getExecutors)() as $executor) {
             /** @var Executor $executor */
 
             if ($this->getUrl() === $executor->getBuildUrl()) {
@@ -162,7 +172,7 @@ class Build
         return BuildStatus::RUNNING === $this->getResult();
     }
 
-    public function getBuiltOn()
+    public function getBuiltOn(): string
     {
         return $this->build->builtOn;
     }

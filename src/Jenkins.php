@@ -549,7 +549,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new Build($infos, $this),
+            fn (stdClass $infos) => new Build($infos, $this->getExecutors(...)),
         )->wait();
     }
 

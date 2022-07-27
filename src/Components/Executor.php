@@ -66,12 +66,12 @@ class Executor
 
     public function getBuildNumber(): ?int
     {
-        return $this->executor?->currentExecutable->number;
+        return $this->executor->currentExecutable?->number;
     }
 
     public function getBuildUrl(): ?string
     {
-        return $this->executor?->currentExecutable->url;
+        return $this->executor->currentExecutable?->url;
     }
 
     public function stop(): void

@@ -44,7 +44,6 @@
     },
     "require": {
         "php": "^8.1",
-        "ext-dom": "*",
         "psr/http-message":"^1.0.1",
         "psr/http-factory":"^1.0.1",
         "teknoo/immutable": "^3.0"

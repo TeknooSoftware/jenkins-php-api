@@ -78,6 +78,9 @@ class Job
         return $this->job->name;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function getParametersDefinition(): array
     {
         $parameters = array();
@@ -92,7 +95,7 @@ class Job
                 $description = $parameterDefinition?->description;
                 $choices = $parameterDefinition?->choices;
 
-                $parameters[$parameterDefinition->name] = array(
+                $parameters[(string) $parameterDefinition->name] = array(
                     'default'     => $default,
                     'choices'     => $choices,
                     'description' => $description,
@@ -110,15 +113,7 @@ class Job
 
     public function retrieveXmlConfigAsString(): string
     {
-        return $this->jenkins->retrieveXmlConfigAsString($this->getName());
-    }
-
-    public function retrieveXmlConfigAsDomDocument(): DOMDocument
-    {
-        $document = new DOMDocument;
-        $document->loadXML($this->retrieveXmlConfigAsString());
-
-        return $document;
+        return $this->jenkins->getJobConfig($this->getName());
     }
 
     public function getLastSuccessfulBuild(): ?Build

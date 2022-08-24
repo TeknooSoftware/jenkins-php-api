@@ -63,6 +63,9 @@ class View
         return $this->view?->url ?? '';
     }
 
+    /**
+     * @return Job[]
+     */
     public function getJobs(): array
     {
         $jobs = array();

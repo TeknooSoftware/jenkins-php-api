@@ -49,6 +49,9 @@ class JobQueue
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getInputParameters(): array
     {
         $parameters = array();
@@ -58,7 +61,7 @@ class JobQueue
         }
 
         foreach ($this->jobQueue->actions[0]->parameters as $parameter) {
-            $parameters[$parameter->name] = $parameter->value;
+            $parameters[(string) $parameter->name] = $parameter->value;
         }
 
         return $parameters;

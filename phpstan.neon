@@ -1,0 +1,5 @@
+parameters:
+    ignoreErrors:
+        -
+            message: '# but returns mixed#'
+            path: src/Jenkins.php

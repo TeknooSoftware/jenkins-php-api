@@ -41,12 +41,16 @@ class Request implements ImmutableInterface
 {
     use ImmutableTrait;
 
+    /**
+     * @param array<string, string> $headers
+     * @param string|array<string, string> $fields
+     */
     public final function __construct(
         private readonly string $path,
         private readonly string $username,
         private readonly string $token,
         private readonly array $headers = [],
-        private readonly array $fields = [],
+        private readonly string|array $fields = [],
     ) {
         $this->uniqueConstructorCheck();
     }
@@ -66,12 +70,18 @@ class Request implements ImmutableInterface
         return $this->token;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getHeaders(): array
     {
         return $this->headers;
     }
 
-    public function getFields(): array
+    /**
+     * @return string|array<string, string>
+     */
+    public function getFields(): string|array
     {
         return $this->fields;
     }

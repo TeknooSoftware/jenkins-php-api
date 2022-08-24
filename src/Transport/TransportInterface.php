@@ -45,9 +45,9 @@ interface TransportInterface extends RequestFactoryInterface, UriFactoryInterfac
      * To initialize a PSR7 Stream, compatible with the content type multipart/form-data, needed to execute the request,
      * Jenkins API accepts only requests with a content type defined to "multipart/form-data".
      *
-     * @param array<mixed, mixed> $elements
+     * @param string|array<mixed, mixed> $elements
      */
-    public function createStream(array &$elements, ?RequestInterface $request = null): StreamInterface;
+    public function createStream(string|array &$elements, ?RequestInterface $request = null): StreamInterface;
 
     /*
      * To execute the PSR7 request, from the Jenkins client.

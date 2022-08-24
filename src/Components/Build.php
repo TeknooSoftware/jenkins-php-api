@@ -62,7 +62,7 @@ class Build
     }
 
     /**
-     * @return array<string, string|int|bool>
+     * @return array<string, mixed>
      */
     public function getInputParameters(): array
     {
@@ -73,7 +73,7 @@ class Build
         }
 
         foreach ($this->build->actions[0]->parameters as $parameter) {
-            $parameters[$parameter->name] = $parameter->value ?? null;
+            $parameters[(string) $parameter->name] = $parameter->value ?? null;
         }
 
         return $parameters;

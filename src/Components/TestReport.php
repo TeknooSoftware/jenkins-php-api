@@ -53,7 +53,7 @@ class TestReport
 
     public function getOriginalTestReport(): string
     {
-        return json_encode($this->testReport);
+        return (string) json_encode($this->testReport);
     }
 
     public function getJobName(): string
@@ -86,12 +86,15 @@ class TestReport
         return $this->testReport->skipCount;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getSuites(): array
     {
         return $this->testReport->suites;
     }
 
-    public function getSuite($id): stdClass
+    public function getSuite(string|int $id): stdClass
     {
         return $this->testReport->suites[$id];
     }

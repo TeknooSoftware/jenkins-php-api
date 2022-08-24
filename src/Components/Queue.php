@@ -49,6 +49,9 @@ class Queue
     ) {
     }
 
+    /**
+     * @return JobQueue[]
+     */
     public function getJobQueues(): array
     {
         $jobs = array();

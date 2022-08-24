@@ -46,6 +46,7 @@ use Teknoo\Jenkins\Transport\Request;
 
 use Throwable;
 use function array_keys;
+use function is_string;
 use function json_decode;
 
 use function rawurlencode;
@@ -154,7 +155,13 @@ class Jenkins
     private function setBodyRequest(RequestInterface $httpRequest, Request $jenkinsRequest): RequestInterface
     {
         $multipartBody = [];
-        foreach ($jenkinsRequest->getFields() as $key => $value) {
+        $fields = $jenkinsRequest->getFields();
+        if (is_string($fields)) {
+            $stream = $this->transport->createStream($fields, $httpRequest);
+            return $httpRequest->withBody($stream);
+        }
+
+        foreach ($fields as $key => $value) {
             $multipartBody[] = [
                 'name' => $key,
                 'contents' => $value
@@ -196,7 +203,7 @@ class Jenkins
      */
     private static function jsonDecode(string $response): stdClass
     {
-        return json_decode(
+        return (object) json_decode(
             json: $response,
             associative: false,
             flags: JSON_THROW_ON_ERROR
@@ -243,10 +250,13 @@ class Jenkins
         return $this->hasCrumbsEnabled;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getCrumbHeader(): array
     {
-        if (true === $this->hasCrumbsEnabled) {
-            return [$this->crumbRequestField] = $this->crumbValue;
+        if (true === $this->hasCrumbsEnabled && null !== $this->crumbRequestField) {
+            return [$this->crumbRequestField => (string) $this->crumbValue];
         }
 
         return [];
@@ -302,30 +312,39 @@ class Jenkins
         )->wait();
     }
 
+    /**
+     * @return string[]
+     */
     public function getAllJobs(): array
     {
         $this->initialize();
 
         $jobs = [];
-        foreach ($this->jenkins->jobs as $job) {
-            $jobs[$job->name] = true;
+        foreach ($this->jenkins?->jobs ?? [] as $job) {
+            $jobs[(string) $job->name] = true;
         }
 
         return array_keys($jobs);
     }
 
+    /**
+     * @return array<string, Job>
+     */
     public function getJobs(): array
     {
         $this->initialize();
 
         $jobs = array();
-        foreach ($this->jenkins->jobs as $job) {
-            $jobs[$job->name] = $this->getJob($job->name);
+        foreach ($this->jenkins?->jobs ?? [] as $job) {
+            $jobs[(string) $job->name] = $this->getJob($job->name);
         }
 
         return $jobs;
     }
 
+    /**
+     * @return Executor[]
+     */
     public function getExecutors(Computer $computer): array
     {
         $this->initialize();
@@ -358,6 +377,9 @@ class Jenkins
         return $executors;
     }
 
+    /**
+     * @param array<string, string> $parameters
+     */
     public function launchJob(string $jobName, array $parameters = []): self
     {
         $jobName = rawurlencode($jobName);
@@ -802,7 +824,7 @@ class Jenkins
                 return $response;
             },
             fn (Throwable $error) => throw new RuntimeException(
-                message: "Error during getting test report about $jobName#$buildId",
+                message: "Error during getting computer",
                 code: $error->getCode(),
                 previous: $error,
             ),

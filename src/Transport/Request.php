@@ -45,7 +45,7 @@ class Request implements ImmutableInterface
      * @param array<string, string> $headers
      * @param string|array<string, string> $fields
      */
-    public final function __construct(
+    final public function __construct(
         private readonly string $path,
         private readonly string $username,
         private readonly string $token,

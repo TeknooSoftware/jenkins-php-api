@@ -27,7 +27,6 @@ declare(strict_types=1);
 
 namespace Teknoo\Jenkins\Components;
 
-
 use Teknoo\Jenkins\Jenkins;
 
 /**

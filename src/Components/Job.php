@@ -27,9 +27,9 @@ declare(strict_types=1);
 
 namespace Teknoo\Jenkins\Components;
 
-
 use DOMDocument;
 use Teknoo\Jenkins\Jenkins;
+
 use function property_exists;
 
 /**

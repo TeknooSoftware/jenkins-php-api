@@ -43,13 +43,14 @@ use Teknoo\Jenkins\Components\View;
 use Teknoo\Jenkins\Transport\TransportInterface;
 use Teknoo\Jenkins\Transport\PromiseInterface;
 use Teknoo\Jenkins\Transport\Request;
-
 use Throwable;
+
 use function array_keys;
+use function implode;
 use function is_string;
 use function json_decode;
-
 use function rawurlencode;
+
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -91,7 +92,7 @@ class Jenkins
 
     /**
      * Create a new instance of the Jenkins management interface class.
-     * 
+     *
      * Uses the provided parameters to formulate the URL used for API requests.
      */
     public function __construct(
@@ -102,20 +103,28 @@ class Jenkins
         private readonly string $token,
         private readonly bool $useHttps = true,
     ) {
-        if(empty($this->host)) {
-            throw new InvalidArgumentException("Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided.");
+        if (empty($this->host)) {
+            throw new InvalidArgumentException(
+                "Unable to create new Jenkins management class; Invalid DNS hostname or IP address provided."
+            );
         }
 
-        if($this->port < 1 || $this->port > 65535) {
-            throw new InvalidArgumentException("Unable to create new Jenkins management class; Invalid port provided.");
+        if ($this->port < 1 || $this->port > 65535) {
+            throw new InvalidArgumentException(
+                "Unable to create new Jenkins management class; Invalid port provided."
+            );
         }
 
-        if(empty($this->username)) {
-            throw new InvalidArgumentException("Unable to create new Jenkins management class; Invalid username provided.");
+        if (empty($this->username)) {
+            throw new InvalidArgumentException(
+                "Unable to create new Jenkins management class; Invalid username provided."
+            );
         }
 
-        if(empty($this->token)) {
-            throw new InvalidArgumentException("Unable to create new Jenkins management class; Invalid token provided.");
+        if (empty($this->token)) {
+            throw new InvalidArgumentException(
+                "Unable to create new Jenkins management class; Invalid token provided."
+            );
         }
     }
 
@@ -542,13 +551,26 @@ class Jenkins
     public function getBuild(
         string $jobName,
         int $buildId,
-        string $tree = 'actions[parameters,parameters[name,value]],result,duration,timestamp,number,url,estimatedDuration,builtOn'
+        ?string $tree = null
     ): Build {
         //todo securiser
-        if ($tree !== null) {
-            $tree = sprintf('?tree=%s', $tree);
+        if (empty($tree)) {
+            $tree = implode(
+                ',',
+                [
+                    'actions[parameters,parameters[name,value]]',
+                    'result',
+                    'duration',
+                    'timestamp',
+                    'number',
+                    'url',
+                    'estimatedDuration',
+                    'builtOn',
+                ],
+            );
         }
 
+        $tree = sprintf('?tree=%s', $tree);
         $jobName = rawurlencode($jobName);
 
         return $this->executeGetQuery(

@@ -3,6 +3,7 @@
   <coverage>
     <include>
       <directory>src</directory>
+      <directory>infrastructures</directory>
     </include>
     <exclude>
       <directory>docs</directory>
@@ -10,7 +11,7 @@
     </exclude>
   </coverage>
   <testsuites>
-    <testsuite name="Teknoo Software/Gd Text Test Suite">
+    <testsuite name="Teknoo Software/Jenkins API Test Suite">
       <directory suffix="Test.php">tests</directory>
     </testsuite>
   </testsuites>

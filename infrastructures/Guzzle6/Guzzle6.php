@@ -28,12 +28,19 @@ namespace Teknoo\Jenkins\Guzzle6\Transport;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use RuntimeException;
 use Teknoo\Jenkins\Transport\PromiseInterface;
 use Teknoo\Jenkins\Transport\TransportInterface;
+
+use function fopen;
+use function fwrite;
+use function is_string;
+use function rewind;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -69,11 +76,20 @@ class Guzzle6 implements TransportInterface
         return new Request($method, $uri);
     }
 
-    /**
-     * @param array<mixed, mixed> $elements
-     */
-    public function createStream(array &$elements, ?RequestInterface $request = null): StreamInterface
+    public function createStream(string|array &$elements, ?RequestInterface $request = null): StreamInterface
     {
+        if (is_string($elements)) {
+            $stream = fopen('php://memory', 'b+');
+            if (false === $stream) {
+                throw new RuntimeException("String stream not opeenable to send a HTTP Request");
+            }
+
+            fwrite($stream, $elements);
+            rewind($stream);
+
+            return new Stream($stream);
+        }
+
         return new MultipartStream($elements);
     }
 

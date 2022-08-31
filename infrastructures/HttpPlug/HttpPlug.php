@@ -37,6 +37,7 @@ use RuntimeException;
 use Teknoo\Jenkins\Transport\PromiseInterface;
 use Teknoo\Jenkins\Transport\TransportInterface;
 
+use function is_string;
 use function preg_match;
 
 /**
@@ -87,12 +88,16 @@ class HttpPlug implements TransportInterface
     }
 
     /**
-     * @param array<string, string> $elements
+     * @param string|array<string, array<string, string>> $elements
      */
-    public function createStream(array &$elements, ?RequestInterface $request = null): StreamInterface
+    public function createStream(string|array &$elements, ?RequestInterface $request = null): StreamInterface
     {
         if (!$request instanceof RequestInterface) {
             throw new RuntimeException('Error, missing request, needed to cretate a Multipart Stream');
+        }
+
+        if (is_string($elements)) {
+            return $this->streamFactory->createStream($elements);
         }
 
         $builder = new MultipartStreamBuilder($this->streamFactory);

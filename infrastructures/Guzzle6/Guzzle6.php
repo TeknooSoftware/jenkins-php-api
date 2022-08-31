@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Jenkins\Guzzle6\Transport;
+namespace Teknoo\Jenkins\Transport\Guzzle6;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\MultipartStream;

@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Jenkins\HttpPlug\Transport;
+namespace Teknoo\Jenkins\Transport\HttpPlug;
 
 use Http\Promise\Promise as HttpPLugPromiseInterface;
 use Teknoo\Jenkins\Transport\PromiseInterface;

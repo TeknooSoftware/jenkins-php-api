@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace Teknoo\Jenkins\HttpPlug\Transport;
+namespace Teknoo\Jenkins\Transport\HttpPlug;
 
 use Http\Client\HttpAsyncClient;
 use Http\Message\MultipartStream\MultipartStreamBuilder;

@@ -45,7 +45,7 @@ composerunsed:
 audit:
 	${COMPOSER} audit
 
-.PHONY: qa lint phploc phpstan phpcs phpcpd composerunsed audit
+.PHONY: qa lint phploc phpstan phpcs phpcpd audit
 
 ### Testing
 test:

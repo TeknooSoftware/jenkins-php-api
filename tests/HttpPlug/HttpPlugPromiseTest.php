@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Jenkins\HttpPlug;
 
+use Http\Promise\Promise as HttpPLugPromiseInterface;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Transport\HttpPlug\HttpPlugPromise;
 use Teknoo\Jenkins\Transport\PromiseInterface;
@@ -44,7 +45,9 @@ class HttpPlugPromiseTest extends TestCase
 {
     private function createTestable(): HttpPlugPromise
     {
-
+        return new HttpPlugPromise(
+            $this->createMock(HttpPLugPromiseInterface::class),
+        );
     }
 
     public function testThen()

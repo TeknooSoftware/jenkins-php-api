@@ -25,6 +25,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Jenkins\Guzzle6;
 
+use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Transport\Guzzle6\Guzzle6;
 
@@ -43,7 +44,9 @@ class Guzzle6Test extends TestCase
 {
     private function createTestable(): Guzzle6
     {
-
+        return new Guzzle6(
+            $this->createMock(Client::class),
+        );
     }
 
     public function testCreateUri()

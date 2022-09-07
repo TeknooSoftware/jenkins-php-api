@@ -25,6 +25,10 @@ declare(strict_types=1);
 
 namespace Teknoo\Tests\Jenkins\HttpPlug;
 
+use Http\Client\HttpAsyncClient;
+use Http\Message\RequestFactory;
+use Http\Message\StreamFactory;
+use Http\Message\UriFactory;
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Transport\HttpPlug\HttpPlug;
 
@@ -43,7 +47,12 @@ class HttpPlugTest extends TestCase
 {
     private function createTestable(): HttpPlug
     {
-
+        return new HttpPlug(
+            $this->createMock(HttpAsyncClient::class),
+            $this->createMock(UriFactory::class),
+            $this->createMock(RequestFactory::class),
+            $this->createMock(StreamFactory::class),
+        );
     }
 
     public function testCreateUri()

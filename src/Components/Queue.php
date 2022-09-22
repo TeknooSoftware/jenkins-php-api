@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Jenkins\Components;
 
+use stdClass;
 use Teknoo\Jenkins\Jenkins;
 
 /**
@@ -43,7 +44,7 @@ use Teknoo\Jenkins\Jenkins;
 class Queue
 {
     public function __construct(
-        private \stdClass $queue,
+        private stdClass $queue,
         private Jenkins $jenkins
     ) {
     }

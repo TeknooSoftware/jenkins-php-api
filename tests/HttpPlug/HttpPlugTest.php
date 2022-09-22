@@ -30,7 +30,11 @@ use Http\Message\RequestFactory;
 use Http\Message\StreamFactory;
 use Http\Message\UriFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
 use Teknoo\Jenkins\Transport\HttpPlug\HttpPlug;
+use Teknoo\Jenkins\Transport\PromiseInterface;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -57,21 +61,43 @@ class HttpPlugTest extends TestCase
 
     public function testCreateUri()
     {
-
+        self::assertInstanceOf(
+            UriInterface::class,
+            $this->createTestable()->createUri('htttps://teknoo.net')
+        );
     }
 
     public function testCreateRequest()
     {
-
+        self::assertInstanceOf(
+            RequestInterface::class,
+            $this->createTestable()->createRequest(
+                'get',
+                $this->createMock(UriInterface::class),
+            ),
+        );
     }
 
     public function testCreateStream()
     {
+        self::assertInstanceOf(
+            StreamInterface::class,
+            $this->createTestable()->createStream($a = 'foo'),
+        );
 
+        self::assertInstanceOf(
+            StreamInterface::class,
+            $this->createTestable()->createStream($a = ['foo']),
+        );
     }
 
     public function testAsyncExecute()
     {
-
+        self::assertInstanceOf(
+            PromiseInterface::class,
+            $this->createTestable()->asyncExecute(
+                $this->createMock(RequestInterface::class),
+            )
+        );
     }
 }

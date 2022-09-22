@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Teknoo\Jenkins\Components;
 
+use stdClass;
 use Teknoo\Jenkins\Jenkins;
 
 /**
@@ -43,7 +44,7 @@ use Teknoo\Jenkins\Jenkins;
 class Executor
 {
     public function __construct(
-        private \stdClass $executor,
+        private stdClass $executor,
         private Computer $computer,
         private Jenkins $jenkins
     ) {

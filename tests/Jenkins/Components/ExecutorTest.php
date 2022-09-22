@@ -26,7 +26,9 @@ declare(strict_types=1);
 namespace Teknoo\Tests\Jenkins\Components;
 
 use PHPUnit\Framework\TestCase;
+use Teknoo\Jenkins\Components\Computer;
 use Teknoo\Jenkins\Components\Executor;
+use Teknoo\Jenkins\Jenkins;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,6 +45,13 @@ class ExecutorTest extends TestCase
 {
     private function createTestable(): Executor
     {
+        $jenkins = $this->createMock(Jenkins::class);
+        $computer = $this->createMock(Computer::class),
 
+        return new Executor(
+            executor: $definitions,
+            computer: $computer,
+            jenkins: $jenkins,
+        )
     }
 }

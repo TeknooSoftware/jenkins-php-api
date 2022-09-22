@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Teknoo\Jenkins\Components;
 
 use DOMDocument;
+use stdClass;
 use Teknoo\Jenkins\Jenkins;
 
 use function property_exists;
@@ -46,7 +47,7 @@ use function property_exists;
 class Job
 {
     public function __construct(
-        private \stdClass $job,
+        private stdClass $job,
         private Jenkins $jenkins
     ) {
     }

@@ -27,6 +27,7 @@ namespace Teknoo\Tests\Jenkins\Components;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Components\Build;
+use Teknoo\Jenkins\Components\Executor;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,7 +44,13 @@ class BuildTest extends TestCase
 {
     private function createTestable(): Build
     {
-
+        return new Build(
+            $definitions,
+            function () {
+                yield $this->createMock(Executor::class);
+                yield $this->createMock(Executor::class);
+            },
+        );
     }
 
     public function testGetInputParameters()

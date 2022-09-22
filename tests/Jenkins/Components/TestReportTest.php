@@ -43,6 +43,10 @@ class TestReportTest extends TestCase
 {
     private function createTestable(): TestReport
     {
-
+        return new TestReport(
+            $definitions,
+            'foo',
+            42,
+        )
     }
 }

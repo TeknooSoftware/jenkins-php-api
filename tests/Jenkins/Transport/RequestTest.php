@@ -43,6 +43,12 @@ class RequestTest extends TestCase
 {
     private function createTestable(): Request
     {
-
+        return new Request(
+            path: '/foo',
+            username: 'foo',
+            token: 'bar',
+            headers: ['foo' => 'bar'],
+            fields: ['foo', 'bar'],
+        );
     }
 }

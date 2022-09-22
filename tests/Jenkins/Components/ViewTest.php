@@ -27,6 +27,7 @@ namespace Teknoo\Tests\Jenkins\Components;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Components\View;
+use Teknoo\Jenkins\Jenkins;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,6 +44,10 @@ class ViewTest extends TestCase
 {
     private function createTestable(): View
     {
-
+        $jenkins = $this->createMock(Jenkins::class);
+        return new View(
+            $definitions,
+            $jenkins
+        );
     }
 }

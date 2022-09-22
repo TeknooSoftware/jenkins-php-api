@@ -27,6 +27,7 @@ namespace Teknoo\Tests\Jenkins\Components;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Components\Computer;
+use Teknoo\Jenkins\Jenkins;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,7 +44,11 @@ class ComputerTest extends TestCase
 {
     private function createTestable(): Computer
     {
-
+        $jenkins = $this->createMock(Jenkins::class);
+        return new Computer(
+            $definitions,
+            $jenkins
+        );
     }
 
     public function testGetName()

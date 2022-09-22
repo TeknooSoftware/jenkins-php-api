@@ -27,6 +27,7 @@ namespace Teknoo\Tests\Jenkins;
 
 use PHPUnit\Framework\TestCase;
 use Teknoo\Jenkins\Jenkins;
+use Teknoo\Jenkins\Transport\TransportInterface;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -43,6 +44,13 @@ class JenkinsTest extends TestCase
 {
     private function createTestable(): Jenkins
     {
-
+        return new Jenkins(
+            transport: $this->createMock(TransportInterface::class),
+            host: 'foo.bar',
+            port: 443,
+            username: 'foo',
+            token: 'bar',
+            useHttps: true,
+        )
     }
 }

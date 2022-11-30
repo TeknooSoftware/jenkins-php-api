@@ -27,8 +27,9 @@ declare(strict_types=1);
 
 namespace Teknoo\Jenkins\Components;
 
+use DomainException;
 use stdClass;
-use Teknoo\Jenkins\Jenkins;
+use ValueError;
 
 /**
  * @copyright   Copyright (c) EIRL Richard Déloge (richarddeloge@gmail.com)
@@ -41,50 +42,28 @@ use Teknoo\Jenkins\Jenkins;
  * @license     http://teknoo.software/license/mit         MIT License
  * @author      Richard Déloge <richarddeloge@gmail.com>
  */
-class Computer
+trait RequirePropertyTrait
 {
-    public function __construct(
-        private stdClass $computer,
-        private Jenkins $jenkins
-    ) {
-    }
+    private static function get(
+        stdClass $object,
+        string $name,
+        mixed $default = null,
+        ?callable $validator = null,
+    ): mixed {
+        $value = $object?->{$name} ?? $default;
 
-    public function getName(): string
-    {
-        return (string) $this->computer?->displayName;
-    }
+        if (null === $value) {
+            throw new DomainException(
+                "The $name property is not available in the result"
+            );
+        }
 
-    public function isOffline(): bool
-    {
-        return (bool) $this->computer->offline;
-    }
+        if (null !== $validator && !$validator($value)) {
+            throw new ValueError(
+                "The $name property's value is not excepted"
+            );
+        }
 
-    /**
-     *
-     * returns null when computer is launching
-     * returns \stdClass when computer has been put offline
-     */
-    public function getOfflineCause(): ?stdClass
-    {
-        return $this->computer->offlineCause;
-    }
-
-    public function toggleOffline(): self
-    {
-        $this->jenkins->toggleOfflineComputer($this->getName());
-
-        return $this;
-    }
-
-    public function delete(): self
-    {
-        $this->jenkins->deleteComputer($this->getName());
-
-        return $this;
-    }
-
-    public function getConfiguration(): string
-    {
-        return $this->jenkins->getComputerConfiguration($this->getName());
+        return $value;
     }
 }

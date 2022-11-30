@@ -42,8 +42,17 @@ use Teknoo\Jenkins\Jenkins;
  */
 class ComputerTest extends TestCase
 {
-    private function createTestable(): Computer
+    private function createTestable(?array $def = null): Computer
     {
+        $definitions = json_decode(
+            json_encode(
+                $def ?? [
+
+            ]
+            ),
+            true
+        );
+
         $jenkins = $this->createMock(Jenkins::class);
         return new Computer(
             $definitions,

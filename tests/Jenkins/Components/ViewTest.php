@@ -42,8 +42,17 @@ use Teknoo\Jenkins\Jenkins;
  */
 class ViewTest extends TestCase
 {
-    private function createTestable(): View
+    private function createTestable(?array $def = null): View
     {
+        $definitions = json_decode(
+            json_encode(
+                $def ?? [
+
+                ]
+            ),
+            true
+        );
+
         $jenkins = $this->createMock(Jenkins::class);
         return new View(
             $definitions,

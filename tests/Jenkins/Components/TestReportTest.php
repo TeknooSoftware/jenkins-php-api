@@ -41,8 +41,17 @@ use Teknoo\Jenkins\Components\TestReport;
  */
 class TestReportTest extends TestCase
 {
-    private function createTestable(): TestReport
+    private function createTestable(?array $def = null): TestReport
     {
+        $definitions = json_decode(
+            json_encode(
+                $def ?? [
+
+            ]
+            ),
+            true
+        );
+
         return new TestReport(
             $definitions,
             'foo',

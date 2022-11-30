@@ -43,8 +43,17 @@ use Teknoo\Jenkins\Jenkins;
  */
 class ExecutorTest extends TestCase
 {
-    private function createTestable(): Executor
+    private function createTestable(?array $def = null): Executor
     {
+        $definitions = json_decode(
+            json_encode(
+                $def ?? [
+
+            ]
+            ),
+            true
+        );
+
         $jenkins = $this->createMock(Jenkins::class);
         $computer = $this->createMock(Computer::class),
 

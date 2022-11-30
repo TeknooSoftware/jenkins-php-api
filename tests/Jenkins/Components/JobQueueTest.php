@@ -42,8 +42,17 @@ use Teknoo\Jenkins\Jenkins;
  */
 class JobQueueTest extends TestCase
 {
-    private function createTestable(): JobQueue
+    private function createTestable(?array $def = null): JobQueue
     {
+        $definitions = json_decode(
+            json_encode(
+                $def ?? [
+
+            ]
+            ),
+            true
+        );
+
         $jenkins = $this->createMock(Jenkins::class);
         return new JobQueue(
             $definitions,

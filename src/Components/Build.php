@@ -29,9 +29,9 @@ namespace Teknoo\Jenkins\Components;
 
 use stdClass;
 use Teknoo\Jenkins\Enums\BuildStatus;
-use Teknoo\Jenkins\Jenkins;
 
 use function ceil;
+use function is_array;
 use function max;
 use function property_exists;
 use function time;
@@ -49,6 +49,8 @@ use function time;
  */
 class Build
 {
+    use RequirePropertyTrait;
+
     /**
      * @var callable
      */
@@ -68,12 +70,14 @@ class Build
     {
         $parameters = [];
 
-        if (!property_exists($this->build->actions[0], 'parameters')) {
+        $actions = self::get($this->build, 'actions', null, is_array(...));
+
+        if (!property_exists($actions[0], 'parameters')) {
             return $parameters;
         }
 
-        foreach ($this->build->actions[0]->parameters as $parameter) {
-            $parameters[(string) $parameter->name] = $parameter->value ?? null;
+        foreach ($actions[0]->parameters as $parameter) {
+            $parameters[(string) self::get($parameter, 'name')] = $parameter?->value;
         }
 
         return $parameters;
@@ -146,7 +150,7 @@ class Build
 
     public function getUrl(): string
     {
-        return $this->build->url;
+        return (string) $this->build?->url;
     }
 
     public function getExecutor(): ?Executor
@@ -174,6 +178,6 @@ class Build
 
     public function getBuiltOn(): string
     {
-        return $this->build->builtOn;
+        return (string) $this->build?->builtOn;
     }
 }

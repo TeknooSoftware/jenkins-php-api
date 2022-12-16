@@ -44,9 +44,9 @@ use Teknoo\Jenkins\Jenkins;
 class Executor
 {
     public function __construct(
-        private stdClass $executor,
-        private Computer $computer,
-        private Jenkins $jenkins
+        private readonly stdClass $executor,
+        private readonly Computer $computer,
+        private readonly Jenkins $jenkins
     ) {
     }
 

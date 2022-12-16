@@ -44,8 +44,8 @@ use Teknoo\Jenkins\Jenkins;
 class Computer
 {
     public function __construct(
-        private stdClass $computer,
-        private Jenkins $jenkins
+        private readonly stdClass $computer,
+        private readonly Jenkins $jenkins
     ) {
     }
 

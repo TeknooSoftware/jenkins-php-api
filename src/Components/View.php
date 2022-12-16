@@ -44,8 +44,8 @@ use Teknoo\Jenkins\Jenkins;
 class View
 {
     public function __construct(
-        private stdClass $view,
-        private Jenkins $jenkins
+        private readonly stdClass $view,
+        private readonly Jenkins $jenkins
     ) {
     }
 
@@ -69,7 +69,7 @@ class View
      */
     public function getJobs(): array
     {
-        $jobs = array();
+        $jobs = [];
 
         foreach ($this->view->jobs as $job) {
             $jobs[] = $this->jenkins->getJob($job->name);

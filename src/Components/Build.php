@@ -57,7 +57,7 @@ class Build
     private $getExecutors;
 
     public function __construct(
-        private stdClass $build,
+        private readonly stdClass $build,
         callable $getExecutors,
     ) {
         $this->getExecutors = $getExecutors;

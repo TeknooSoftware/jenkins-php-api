@@ -44,8 +44,8 @@ use Teknoo\Jenkins\Jenkins;
 class JobQueue
 {
     public function __construct(
-        private stdClass $jobQueue,
-        private Jenkins $jenkins
+        private readonly stdClass $jobQueue,
+        private readonly Jenkins $jenkins
     ) {
     }
 
@@ -54,7 +54,7 @@ class JobQueue
      */
     public function getInputParameters(): array
     {
-        $parameters = array();
+        $parameters = [];
 
         if (!\property_exists($this->jobQueue->actions[0], 'parameters')) {
             return $parameters;

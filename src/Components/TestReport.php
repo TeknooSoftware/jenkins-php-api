@@ -44,15 +44,15 @@ use Teknoo\Jenkins\Jenkins;
 class TestReport
 {
     public function __construct(
-        private stdClass $testReport,
-        private string $jobName,
-        private int $buildNumber
+        private readonly stdClass $testReport,
+        private readonly string $jobName,
+        private readonly int $buildNumber
     ) {
     }
 
     public function getOriginalTestReport(): string
     {
-        return (string) json_encode($this->testReport);
+        return (string) json_encode($this->testReport, JSON_THROW_ON_ERROR);
     }
 
     public function getJobName(): string

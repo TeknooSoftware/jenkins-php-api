@@ -229,7 +229,7 @@ class Jenkins
             ),
         )->then(
             self::jsonDecode(...),
-            fn (Throwable $error) => throw new RuntimeException(
+            static fn(Throwable $error) => throw new RuntimeException(
                 message: 'Invalid Crumb response',
                 code: $error->getCode(),
                 previous: $error,
@@ -282,8 +282,8 @@ class Jenkins
                     headers: $this->getCrumbHeader(),
                 ),
             )->then(
-                fn() => $this->getQueue(),
-                fn (Throwable $error) => throw new RuntimeException(
+                fn(): \Teknoo\Jenkins\Components\Queue => $this->getQueue(),
+                static fn(Throwable $error) => throw new RuntimeException(
                     message: 'Not Available',
                     code: $error->getCode(),
                     previous: $error,
@@ -311,7 +311,7 @@ class Jenkins
             ),
         )->then(
             self::jsonDecode(...),
-            fn (Throwable $error) => throw new RuntimeException(
+            static fn(Throwable $error) => throw new RuntimeException(
                 message: 'Invalid response',
                 code: $error->getCode(),
                 previous: $error,
@@ -343,7 +343,7 @@ class Jenkins
     {
         $this->initialize();
 
-        $jobs = array();
+        $jobs = [];
         foreach ($this->jenkins?->jobs ?? [] as $job) {
             $jobs[(string) $job->name] = $this->getJob($job->name);
         }
@@ -361,7 +361,7 @@ class Jenkins
         $executors = [];
         $numExecutors = ($this->jenkins?->numExecutors ?? 1);
         $computerName = rawurlencode($computer->getName());
-        for ($i = 0; $i < $numExecutors; $i++) {
+        for ($i = 0; $i < $numExecutors; ++$i) {
             $this->executeGetQuery(
                 new Request(
                     path: "/computer/$computerName/executors/$i/api/json",
@@ -371,7 +371,7 @@ class Jenkins
                 ),
             )->then(
                 self::jsonDecode(...),
-                fn (Throwable $error) => throw new RuntimeException(
+                static fn(Throwable $error) => throw new RuntimeException(
                     message: 'Invalid executor response',
                     code: $error->getCode(),
                     previous: $error,
@@ -408,7 +408,7 @@ class Jenkins
             ),
         )->then(
             self::jsonDecode(...),
-            fn (Throwable $error) => throw new RuntimeException(
+            static fn(Throwable $error) => throw new RuntimeException(
                 message: 'Invalid start job response',
                 code: $error->getCode(),
                 previous: $error,
@@ -442,7 +442,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new Job($infos, $this),
+            fn (stdClass $infos): \Teknoo\Jenkins\Components\Job => new Job($infos, $this),
         )->wait();
     }
 
@@ -458,7 +458,7 @@ class Jenkins
                 headers: $this->getCrumbHeader(),
             ),
         )->otherwise(
-            fn (Throwable $error) => throw new RuntimeException(
+            static fn(Throwable $error) => throw new RuntimeException(
                 message: 'Invalid delete job response',
                 code: $error->getCode(),
                 previous: $error,
@@ -476,11 +476,9 @@ class Jenkins
                 headers: $this->getCrumbHeader(),
             ),
         )->then(
-            static function (string $response): string {
-                //todo manage 404
-                return $response;
-            },
-            fn (Throwable $error) => throw new RuntimeException(
+            static fn(string $response): string => //todo manage 404
+$response,
+            static fn(Throwable $error) => throw new RuntimeException(
                 message: 'Error during getting information for queue',
                 code: $error->getCode(),
                 previous: $error,
@@ -488,7 +486,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new Queue($infos, $this),
+            fn (stdClass $infos): \Teknoo\Jenkins\Components\Queue => new Queue($infos, $this),
         )->wait();
     }
 
@@ -499,7 +497,7 @@ class Jenkins
     {
         $this->initialize();
 
-        $views = array();
+        $views = [];
         foreach ($this->jenkins?->views ?? [] as $view) {
             $views[] = $this->getView($view->name);
         }
@@ -544,7 +542,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new View($infos, $this),
+            fn (stdClass $infos): \Teknoo\Jenkins\Components\View => new View($infos, $this),
         )->wait();
     }
 
@@ -593,7 +591,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new Build($infos, $this->getExecutors(...)),
+            fn (stdClass $infos): \Teknoo\Jenkins\Components\Build => new Build($infos, $this->getExecutors(...)),
         )->wait();
     }
 
@@ -621,7 +619,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new Computer($infos, $this),
+            fn (stdClass $infos): \Teknoo\Jenkins\Components\Computer => new Computer($infos, $this),
         )->wait();
     }
 
@@ -824,7 +822,7 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => new TestReport($infos, $jobName, $buildId),
+            static fn(stdClass $infos): \Teknoo\Jenkins\Components\TestReport => new TestReport($infos, $jobName, $buildId),
         )->wait();
     }
 
@@ -841,11 +839,9 @@ class Jenkins
                 headers: $this->getCrumbHeader(),
             ),
         )->then(
-            static function (string $response): string {
-                //todo manage 404
-                return $response;
-            },
-            fn (Throwable $error) => throw new RuntimeException(
+            static fn(string $response): string => //todo manage 404
+$response,
+            static fn(Throwable $error) => throw new RuntimeException(
                 message: "Error during getting computer",
                 code: $error->getCode(),
                 previous: $error,
@@ -853,18 +849,13 @@ class Jenkins
         )->then(
             self::jsonDecode(...),
         )->then(
-            fn (stdClass $infos) => array_map(
-                fn ($computer) => $this->getComputer($computer->displayName),
+            fn (stdClass $infos): array => array_map(
+                fn ($computer): \Teknoo\Jenkins\Components\Computer => $this->getComputer($computer->displayName),
                 $infos?->computer ?? []
             )
         )->wait();
     }
 
-    /**
-     * @param string $computerName
-     *
-     * @return string
-     */
     public function getComputerConfiguration(string $computerName): string
     {
         $computerName = rawurlencode($computerName);

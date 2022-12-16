@@ -44,8 +44,8 @@ use Teknoo\Jenkins\Jenkins;
 class Queue
 {
     public function __construct(
-        private stdClass $queue,
-        private Jenkins $jenkins
+        private readonly stdClass $queue,
+        private readonly Jenkins $jenkins
     ) {
     }
 
@@ -54,7 +54,7 @@ class Queue
      */
     public function getJobQueues(): array
     {
-        $jobs = array();
+        $jobs = [];
 
         foreach ($this->queue->items as $item) {
             $jobs[] = new JobQueue($item, $this->jenkins);

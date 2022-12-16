@@ -47,8 +47,8 @@ use function property_exists;
 class Job
 {
     public function __construct(
-        private stdClass $job,
-        private Jenkins $jenkins
+        private readonly stdClass $job,
+        private readonly Jenkins $jenkins
     ) {
     }
 
@@ -57,7 +57,7 @@ class Job
      */
     public function getBuilds(): array
     {
-        $builds = array();
+        $builds = [];
         foreach ($this->job->builds as $build) {
             $builds[] = $this->getJenkinsBuild($build->number);
         }
@@ -84,7 +84,7 @@ class Job
      */
     public function getParametersDefinition(): array
     {
-        $parameters = array();
+        $parameters = [];
 
         foreach ($this->job->actions as $action) {
             if (!property_exists($action, 'parameterDefinitions')) {

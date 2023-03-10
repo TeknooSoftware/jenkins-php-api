@@ -40,7 +40,10 @@
         }
     ],
     "config": {
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     },
     "require": {
         "php": "^8.1",
@@ -55,7 +58,7 @@
         "sebastian/phpcpd": "^6.0.3",
         "phpstan/phpstan": "^1.9.14",
         "symfony/property-access": "^6.2.5",
-        "icanhazstring/composer-unused": "^0.8.6",
+        "icanhazstring/composer-unused": "^0.8.5",
         "nikic/php-parser": "^v4.13.2",
         "guzzlehttp/guzzle":"^7.4",
         "guzzlehttp/psr7":"^2.4",
